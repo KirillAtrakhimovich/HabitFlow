@@ -52,7 +52,15 @@ struct TodayView: View {
             .tint(accent)
             .onAppear { vm.loadHabits() }
             .sheet(isPresented: $showAddSheet) {
-                addHabitSheet
+                AddHabitView { title, icon, colorHex, goal, reminder in
+                    vm.addHabit(
+                        title: title,
+                        iconName: icon,
+                        colorHex: colorHex,
+                        goalTimesPerWeek: goal,
+                        reminderTime: reminder
+                    )
+                }
                     .presentationDetents([.medium])
             }
         }
