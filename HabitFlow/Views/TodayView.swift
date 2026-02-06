@@ -8,6 +8,7 @@ struct TodayView: View {
 
     @State private var showAddSheet = false
     @State private var newHabitTitle: String = ""
+    @State private var selectedHabit: Habit?
 
     var body: some View {
         NavigationStack {
