@@ -8,6 +8,7 @@ struct TodayView: View {
 
     @State private var showAddSheet = false
     @State private var newHabitTitle: String = ""
+    @State private var selectedHabit: Habit?
 
     var body: some View {
         NavigationStack {
@@ -52,7 +53,15 @@ struct TodayView: View {
             .tint(accent)
             .onAppear { vm.loadHabits() }
             .sheet(isPresented: $showAddSheet) {
-                addHabitSheet
+                AddHabitView { title, icon, colorHex, goal, reminder in
+                    vm.addHabit(
+                        title: title,
+                        iconName: icon,
+                        colorHex: colorHex,
+                        goalTimesPerWeek: goal,
+                        reminderTime: reminder
+                    )
+                }
                     .presentationDetents([.medium])
             }
         }
@@ -111,14 +120,30 @@ struct TodayView: View {
     private var habitsList: some View {
         VStack(spacing: 10) {
             ForEach(vm.habits) { habit in
-                HabitRow(
-                    habit: habit,
-                    isCompleted: vm.isCompletedToday(habit),
-                    primary: primary,
-                    accent: accent
-                ) {
-                    vm.toggleHabit(habit)
+                NavigationLink {
+                    HabitDetailView(
+                        habit: habit,
+                        onEdit: { updatedHabit in
+                            vm.updateHabit(updatedHabit)
+                        },
+                        onArchive: { id in
+                            vm.archiveHabit(id)
+                        },
+                        onDelete: { id in
+                            vm.deleteHabit(id)
+                        }
+                    )
+                } label: {
+                    HabitRow(
+                        habit: habit,
+                        isCompleted: vm.isCompletedToday(habit),
+                        primary: primary,
+                        accent: accent
+                    ) {
+                        vm.toggleHabit(habit)
+                    }
                 }
+                .buttonStyle(.plain)
             }
         }
     }
