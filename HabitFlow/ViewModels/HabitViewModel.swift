@@ -70,6 +70,24 @@ final class HabitViewModel: ObservableObject {
         habits.insert(newHabit, at: 0)
     }
 
+    // MARK: - New methods for HabitDetailView
+    
+    func updateHabit(_ updatedHabit: Habit) {
+        if let index = habits.firstIndex(where: { $0.id == updatedHabit.id }) {
+            habits[index] = updatedHabit
+        }
+    }
+
+    func archiveHabit(_ id: UUID) {
+        habits.removeAll { $0.id == id }
+        completedToday.remove(id)
+    }
+
+    func deleteHabit(_ id: UUID) {
+        habits.removeAll { $0.id == id }
+        completedToday.remove(id)
+    }
+
     // Convenience
     func isCompletedToday(_ habit: Habit) -> Bool {
         completedToday.contains(habit.id)
