@@ -111,6 +111,12 @@ struct MainTabView: View {
                     Text("Календарь")
                 }
                 .background(Color.purple)
+            
+            SettingsView()
+                            .tabItem {
+                                Image(systemName: "gearshape")
+                                Text("Настройки")
+                            }
         }
         .background(Color.purple)
     }
