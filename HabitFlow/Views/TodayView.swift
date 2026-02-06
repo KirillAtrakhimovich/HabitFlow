@@ -111,14 +111,30 @@ struct TodayView: View {
     private var habitsList: some View {
         VStack(spacing: 10) {
             ForEach(vm.habits) { habit in
-                HabitRow(
-                    habit: habit,
-                    isCompleted: vm.isCompletedToday(habit),
-                    primary: primary,
-                    accent: accent
-                ) {
-                    vm.toggleHabit(habit)
+                NavigationLink {
+                    HabitDetailView(
+                        habit: habit,
+                        onEdit: { updatedHabit in
+                            vm.updateHabit(updatedHabit)
+                        },
+                        onArchive: { id in
+                            vm.archiveHabit(id)
+                        },
+                        onDelete: { id in
+                            vm.deleteHabit(id)
+                        }
+                    )
+                } label: {
+                    HabitRow(
+                        habit: habit,
+                        isCompleted: vm.isCompletedToday(habit),
+                        primary: primary,
+                        accent: accent
+                    ) {
+                        vm.toggleHabit(habit)
+                    }
                 }
+                .buttonStyle(.plain)
             }
         }
     }
