@@ -3,10 +3,11 @@ import SwiftUI
 struct HabitDetailView: View {
     let habit: Habit
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var hSizeClass
     
     // Theme
-    private let primary = Color.purple
-    private let accent  = Color.cyan
+    private let primary = Color.primaryPurple
+    private let accent  = Color.accentCyan
     private let success = Color.green
     
     // State
@@ -28,14 +29,14 @@ struct HabitDetailView: View {
                 Color.black.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: hSizeClass == .regular ? 20 : 16) {
                         headerCard
                         statsCard
                         historyCard
                         
                         Spacer(minLength: 20)
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal)
                     .padding(.vertical, 12)
                 }
             }
@@ -91,6 +92,7 @@ struct HabitDetailView: View {
                 Text("Привычка будет перемещена в архив. Вы сможете восстановить её позже.")
             }
         }
+        .dynamicTypeSize(.small ... .accessibility3)
     }
     
     // MARK: - Cards
@@ -316,19 +318,10 @@ struct HabitDetailView: View {
     }
     
     private func colorForHex(_ hex: String) -> Color {
-        switch hex {
-        case "8A2BE2": return Color.purple
-        case "00FFFF": return Color.cyan
-        case "34C759": return Color.green
-        case "FF9500": return Color.orange
-        case "FF3B30": return Color.red
-        case "007AFF": return Color.blue
-        case "FF2D55": return Color.pink
-        case "AF52DE": return Color.purple.opacity(0.8)
-        case "FFCC00": return Color.yellow
-        case "5AC8FA": return Color.blue.opacity(0.7)
-        default: return Color.purple
+        if let color = Color(hex: hex) {
+            return color
         }
+        return Color.primaryPurple
     }
 }
 
@@ -490,7 +483,7 @@ private struct EditHabitView: View {
                     
                     Spacer()
                 }
-                .padding()
+                .padding(.horizontal)
             }
             .navigationTitle("Редактировать")
             .navigationBarTitleDisplayMode(.inline)
@@ -510,5 +503,6 @@ private struct EditHabitView: View {
                 }
             }
         }
+        .dynamicTypeSize(.small ... .accessibility3)
     }
 }

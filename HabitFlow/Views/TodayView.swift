@@ -1,10 +1,12 @@
 import SwiftUI
 
 struct TodayView: View {
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+    
     @StateObject private var vm = HabitViewModel()
 
-    private let primary = Color("8A2BE2")
-    private let accent  = Color("00FFFF")
+    private let primary = Color.primaryPurple
+    private let accent  = Color.accentCyan
 
     @State private var showAddSheet = false
     @State private var newHabitTitle: String = ""
@@ -16,7 +18,7 @@ struct TodayView: View {
                 Color.black.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 14) {
+                    VStack(spacing: hSizeClass == .regular ? 18 : 14) {
                         headerCard
                         progressCard
 
@@ -26,7 +28,7 @@ struct TodayView: View {
                             habitsList
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal)
                     .padding(.vertical, 12)
                 }
             }
@@ -65,6 +67,7 @@ struct TodayView: View {
                     .presentationDetents([.medium])
             }
         }
+        .dynamicTypeSize(.small ... .accessibility3)
     }
 
     // MARK: - UI

@@ -3,8 +3,8 @@ import SwiftUI
 struct LaunchScreenView: View {
     @EnvironmentObject private var appVM: AppViewModel
 
-    private let primary = Color("8A2BE2")
-    private let accent  = Color("00FFFF")
+    private let primary = Color.primaryPurple
+    private let accent  = Color.accentCyan
 
     @State private var checkScale: CGFloat = 0.70
     @State private var checkOpacity: Double = 0.0
@@ -64,7 +64,7 @@ struct LaunchScreenView: View {
                     .scaleEffect(1.05)
                     .opacity(0.9)
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal)
         }
         .onAppear {
             // Logo pop-in
@@ -88,5 +88,6 @@ struct LaunchScreenView: View {
                 }
             }
         }
+        .dynamicTypeSize(.small ... .accessibility3)
     }
 }

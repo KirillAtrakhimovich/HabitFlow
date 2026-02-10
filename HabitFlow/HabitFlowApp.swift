@@ -4,9 +4,9 @@ import SwiftUI
 struct HabitFlowApp: App {
     @StateObject private var appVM = AppViewModel()
 
-    // App theme
-    private let primaryColor = Color.purple
-    private let accentColor  = Color.cyan
+    // App theme (используем hex‑цвета из Theme.swift)
+    private let primaryColor = Color.primaryPurple
+    private let accentColor  = Color.accentCyan
 
     var body: some Scene {
         WindowGroup {
@@ -20,8 +20,8 @@ struct HabitFlowApp: App {
                     OnboardingView()
                         .transition(.opacity)
                 } else {
-                    // Replace with your real Main/Tab view when you add it
-                    MainTabView()
+                    // Главный экран с таб-баром
+                    RootView()
                         .transition(.opacity)
                 }
             }
@@ -32,8 +32,8 @@ struct HabitFlowApp: App {
             .environment(\.colorScheme, .light)
             .environment(\.font, .system(.body, design: .rounded))
             .onAppear {
-                appVM.primaryColorHex = .purple
-                appVM.accentColorHex = .cyan
+                appVM.primaryColorHex = "8A2BE2"
+                appVM.accentColorHex = "00FFFF"
             }
         }
     }
@@ -47,8 +47,9 @@ final class AppViewModel: ObservableObject {
     @Published var showOnboarding: Bool = true
 
     // Optional: keep theme values accessible app-wide if needed later
-    @Published var primaryColorHex: Color = .purple
-    @Published var accentColorHex: Color = .cyan
+    /// Hex‑значения цветов (например, "8A2BE2")
+    @Published var primaryColorHex: String = "8A2BE2"
+    @Published var accentColorHex: String = "00FFFF"
 
     /// Call when onboarding is finished.
     func completeOnboarding() {
@@ -103,14 +104,14 @@ struct MainTabView: View {
                     Text("Сегодня")
                        
                 }
-                .background(Color.purple)
+                .background(Color.primaryPurple)
 
             CalendarView()
                 .tabItem {
                     Image(systemName: "calendar")
                     Text("Календарь")
                 }
-                .background(Color.purple)
+                .background(Color.primaryPurple)
             
             SettingsView()
                             .tabItem {
@@ -118,6 +119,6 @@ struct MainTabView: View {
                                 Text("Настройки")
                             }
         }
-        .background(Color.purple)
+        .background(Color.primaryPurple)
     }
 }

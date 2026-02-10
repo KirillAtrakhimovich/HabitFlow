@@ -1,9 +1,10 @@
 import SwiftUI
 
 struct CalendarView: View {
+    @Environment(\.horizontalSizeClass) private var hSizeClass
     // Theme
-    private let primary = Color("8A2BE2")
-    private let accent  = Color("00FFFF")
+    private let primary = Color.primaryPurple
+    private let accent  = Color.accentCyan
     private let success = Color("34C759")
 
     // Calendar state
@@ -26,14 +27,14 @@ struct CalendarView: View {
                 Color.black.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 14) {
+                    VStack(spacing: hSizeClass == .regular ? 18 : 14) {
                         monthHeaderCard
                         calendarGridCard
                         detailsCard
                         weeklyChartCard
                         overallPercentCard
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal)
                     .padding(.vertical, 12)
                 }
             }
@@ -44,6 +45,7 @@ struct CalendarView: View {
         .onAppear {
             seedDemoDataIfNeeded()
         }
+        .dynamicTypeSize(.small ... .accessibility3)
     }
 
     // MARK: - Cards

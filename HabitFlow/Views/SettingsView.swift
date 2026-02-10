@@ -1,13 +1,14 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.horizontalSizeClass) private var hSizeClass
     @AppStorage("isDarkMode") private var isDarkMode = true
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("dailyRemindersEnabled") private var dailyRemindersEnabled = true
     
     // Theme
-    private let primary = Color.purple
-    private let accent  = Color.cyan
+    private let primary = Color.primaryPurple
+    private let accent  = Color.accentCyan
     
     @State private var showExportAlert = false
     @State private var showAboutSheet = false
@@ -18,7 +19,7 @@ struct SettingsView: View {
                 Color.black.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: hSizeClass == .regular ? 20 : 16) {
                         appearanceSection
                         notificationsSection
                         dataSection
@@ -26,7 +27,7 @@ struct SettingsView: View {
                         
                         Spacer(minLength: 20)
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal)
                     .padding(.vertical, 12)
                 }
             }
@@ -43,6 +44,7 @@ struct SettingsView: View {
                 Text("Данные успешно экспортированы. Файл сохранён в папке «Файлы».")
             }
         }
+        .dynamicTypeSize(.small ... .accessibility3)
     }
     
     // MARK: - Sections
@@ -319,8 +321,8 @@ private struct Card<Content: View>: View {
 private struct AboutSheet: View {
     @Environment(\.dismiss) private var dismiss
     
-    private let accent = Color.cyan
-    private let primary = Color.purple
+    private let accent = Color.accentCyan
+    private let primary = Color.primaryPurple
     
     var body: some View {
         NavigationStack {

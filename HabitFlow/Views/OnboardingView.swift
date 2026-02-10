@@ -2,9 +2,10 @@ import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject private var appVM: AppViewModel
+    @Environment(\.horizontalSizeClass) private var hSizeClass
 
-    private let primary = Color("8A2BE2")
-    private let accent  = Color("00FFFF")
+    private let primary = Color.primaryPurple
+    private let accent  = Color.accentCyan
 
     @State private var selection: Int = 0
 
@@ -43,7 +44,7 @@ struct OnboardingView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 18) {
+            VStack(spacing: hSizeClass == .regular ? 24 : 18) {
                 header
 
                 TabView(selection: $selection) {
@@ -54,7 +55,7 @@ struct OnboardingView: View {
                             accent: accent
                         )
                         .tag(index)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal)
                         .transition(.opacity.combined(with: .scale))
                     }
                 }
@@ -67,6 +68,7 @@ struct OnboardingView: View {
             .padding(.vertical, 18)
         }
         .tint(accent)
+        .dynamicTypeSize(.small ... .accessibility3)
     }
 
     // MARK: - Header
@@ -87,13 +89,13 @@ struct OnboardingView: View {
                 .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(.white.opacity(0.55))
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal)
     }
 
     // MARK: - Footer
 
     private var footer: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: hSizeClass == .regular ? 16 : 12) {
             if isLast {
                 Button {
                     finish()
@@ -149,7 +151,7 @@ struct OnboardingView: View {
                 .accessibilityLabel("Пропустить онбординг")
             }
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal)
         .padding(.bottom, 10)
     }
 
