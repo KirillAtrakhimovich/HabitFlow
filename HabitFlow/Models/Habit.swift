@@ -6,7 +6,6 @@ struct Habit: Identifiable, Codable, Hashable {
     var iconName: String
     var colorHex: String
     var goalTimesPerWeek: Int
-    /// Time-only reminder (e.g., 09:30). Use `nil` for no reminder.
     var reminderTime: DateComponents?
     var createdAt: Date
 

@@ -4,7 +4,6 @@ import SwiftUI
 struct HabitFlowApp: App {
     @StateObject private var appVM = AppViewModel()
 
-    // App theme (используем hex‑цвета из Theme.swift)
     private let primaryColor = Color.primaryPurple
     private let accentColor  = Color.accentCyan
 
@@ -16,11 +15,9 @@ struct HabitFlowApp: App {
                     LaunchScreenView()
                         .transition(.opacity)
                 } else if appVM.showOnboarding {
-                    // Replace with your real OnboardingView when you add it
                     OnboardingView()
                         .transition(.opacity)
                 } else {
-                    // Главный экран с таб-баром
                     RootView()
                         .transition(.opacity)
                 }
@@ -46,17 +43,13 @@ final class AppViewModel: ObservableObject {
     @Published var showLaunchScreen: Bool = true
     @Published var showOnboarding: Bool = true
 
-    // Optional: keep theme values accessible app-wide if needed later
-    /// Hex‑значения цветов (например, "8A2BE2")
     @Published var primaryColorHex: String = "8A2BE2"
     @Published var accentColorHex: String = "00FFFF"
 
-    /// Call when onboarding is finished.
     func completeOnboarding() {
         showOnboarding = false
     }
 
-    /// Called by the launch screen (or app) to dismiss it.
     func dismissLaunchScreen() {
         showLaunchScreen = false
     }

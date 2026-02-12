@@ -45,8 +45,6 @@ struct OnboardingView: View {
             .ignoresSafeArea()
 
             VStack(spacing: hSizeClass == .regular ? 24 : 18) {
-                header
-
                 TabView(selection: $selection) {
                     ForEach(Array(slides.enumerated()), id: \.offset) { index, slide in
                         OnboardingSlideView(
@@ -69,27 +67,6 @@ struct OnboardingView: View {
         }
         .tint(accent)
         .dynamicTypeSize(.small ... .accessibility3)
-    }
-
-    // MARK: - Header
-
-    private var header: some View {
-        HStack {
-            Button("Пропустить") {
-                finish()
-            }
-            .font(.system(.body, design: .rounded).weight(.semibold))
-            .foregroundStyle(.white.opacity(0.9))
-            .opacity(isLast ? 0 : 1)
-            .disabled(isLast)
-
-            Spacer()
-
-            Text("\(selection + 1)/\(slides.count)")
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                .foregroundStyle(.white.opacity(0.55))
-        }
-        .padding(.horizontal)
     }
 
     // MARK: - Footer
