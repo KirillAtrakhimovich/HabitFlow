@@ -57,12 +57,6 @@ struct LaunchScreenView: View {
                 Text("HabitFlow")
                     .font(.system(.title2, design: .rounded).weight(.bold))
                     .foregroundStyle(.white.opacity(0.95))
-
-                // Spinner fallback (small, subtle)
-                ProgressView()
-                    .tint(accent)
-                    .scaleEffect(1.05)
-                    .opacity(0.9)
             }
             .padding(.horizontal)
         }

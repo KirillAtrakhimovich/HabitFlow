@@ -64,7 +64,6 @@ struct AddHabitView: View {
                         colorSection
                         goalSection
                         reminderSection
-                        
                         saveButton
                     }
                     .padding(.horizontal)
