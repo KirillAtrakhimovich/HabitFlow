@@ -6,6 +6,11 @@ struct OnboardingView: View {
 
     private let primary = Color.primaryPurple
     private let accent  = Color.accentCyan
+    
+    let primaryBrand = Color(red: 0.75, green: 0.70, blue: 0.90)
+    let accentBrand = Color(red: 0.55, green: 0.75, blue: 0.80)
+    let loaderColor = Color(red: 0.55, green: 0.50, blue: 0.80)
+    let whiteColor = Color.white.opacity(0.85)
 
     @State private var selection: Int = 0
 
@@ -36,8 +41,8 @@ struct OnboardingView: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    primary.opacity(0.22),
-                    Color.black.opacity(0.94)
+                    primaryBrand.opacity(0.22),
+                    accentBrand.opacity(0.94)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -49,8 +54,8 @@ struct OnboardingView: View {
                     ForEach(Array(slides.enumerated()), id: \.offset) { index, slide in
                         OnboardingSlideView(
                             slide: slide,
-                            primary: primary,
-                            accent: accent
+                            primary: loaderColor,
+                            accent: whiteColor
                         )
                         .tag(index)
                         .padding(.horizontal)
