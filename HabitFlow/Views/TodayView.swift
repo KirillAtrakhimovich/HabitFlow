@@ -5,8 +5,11 @@ struct TodayView: View {
     
     @StateObject private var vm = HabitViewModel()
 
-    private let primary = Color.primaryPurple
-    private let accent  = Color.accentCyan
+    let primary = Color(red: 0.75, green: 0.70, blue: 0.90)
+    let accent = Color(red: 0.55, green: 0.75, blue: 0.80)
+    
+    let purple = Color.purple
+    let cyan = Color.cyan
 
     @State private var showAddSheet = false
     @State private var newHabitTitle: String = ""
@@ -15,7 +18,16 @@ struct TodayView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                    LinearGradient(
+                        colors: [
+                            primary.opacity(0.8),
+                            accent.opacity(0.7)
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
+
 
                 ScrollView {
                     VStack(spacing: hSizeClass == .regular ? 18 : 14) {
@@ -39,15 +51,11 @@ struct TodayView: View {
                         showAddSheet = true
                     } label: {
                         Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Color.cyan.opacity(0.6))
                             .padding(10)
-                            .background(primary.opacity(0.35))
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(accent.opacity(0.35), lineWidth: 1)
-                            )
+                            
                     }
                     .accessibilityLabel("Добавить привычку")
                 }
@@ -108,7 +116,7 @@ struct TodayView: View {
                         .frame(height: 12)
 
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(LinearGradient(colors: [accent, primary], startPoint: .leading, endPoint: .trailing))
+                        .fill(LinearGradient(colors: [purple, cyan], startPoint: .leading, endPoint: .trailing))
                         .frame(width: max(0, CGFloat(vm.progress) * (UIScreen.main.bounds.width - 32 - 32)), height: 12)
                         .animation(.easeInOut(duration: 0.2), value: vm.progress)
                 }
@@ -255,7 +263,7 @@ private struct Card<Content: View>: View {
     var body: some View {
         content
             .padding(16)
-            .background(Color.white.opacity(0.07))
+            .background(Color.purple.opacity(0.3))
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -274,11 +282,11 @@ private struct HabitRow: View {
 
     // MARK: - Derived values (help compiler)
     private var iconBackground: Color { Color(habit.colorHex).opacity(isCompleted ? 0.25 : 0.14) }
-    private var iconBorder: Color { accent.opacity(isCompleted ? 0.55 : 0.15) }
-    private var checkFill: Color { isCompleted ? accent.opacity(0.95) : Color.white.opacity(0.10) }
+    private var iconBorder: Color { Color.cyan.opacity(isCompleted ? 0.55 : 0.15) }
+    private var checkFill: Color { isCompleted ? Color.cyan.opacity(0.95) : Color.white.opacity(0.10) }
     private var checkForeground: Color { isCompleted ? .black : .white.opacity(0.65) }
-    private var cardBackground: Color { Color.white.opacity(isCompleted ? 0.10 : 0.06) }
-    private var cardBorder: Color { isCompleted ? accent.opacity(0.45) : Color.white.opacity(0.06) }
+    private var cardBackground: Color { Color.purple.opacity(isCompleted ? 0.30 : 0.15) }
+    private var cardBorder: Color { isCompleted ? Color.cyan.opacity(0.45) : Color.white.opacity(0.06) }
     private var cardShadow: Color { Color.black.opacity(isCompleted ? 0.45 : 0.30) }
 
     var body: some View {
