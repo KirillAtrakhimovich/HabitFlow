@@ -87,31 +87,3 @@ private struct PlaceholderMainView: View {
         .padding()
     }
 }
-
-struct MainTabView: View {
-    var body: some View {
-        TabView {
-            TodayView()
-                .tabItem {
-                    Image(systemName: "checkmark.circle")
-                    Text("Сегодня")
-                       
-                }
-                .background(Color.primaryPurple)
-
-            CalendarView()
-                .tabItem {
-                    Image(systemName: "calendar")
-                    Text("Календарь")
-                }
-                .background(Color.primaryPurple)
-            
-            SettingsView()
-                            .tabItem {
-                                Image(systemName: "gearshape")
-                                Text("Настройки")
-                            }
-        }
-        .background(Color.primaryPurple)
-    }
-}
