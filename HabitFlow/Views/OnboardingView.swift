@@ -50,7 +50,26 @@ struct OnboardingView: View {
             .ignoresSafeArea()
 
             VStack(spacing: hSizeClass == .regular ? 24 : 18) {
+                HStack {
+                        Spacer()
+                        Button {
+                            finish()
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundStyle(.white.opacity(0.9))
+                                .background(
+                                    Circle()
+                                        .fill(Color.white.opacity(0.08))
+                                        .frame(width: 44, height: 44)
+                                )
+                        }
+                        .accessibilityLabel("Пропустить онбординг")
+                        .padding(.trailing, 16)
+                    }
+                
                 TabView(selection: $selection) {
+                    
                     ForEach(Array(slides.enumerated()), id: \.offset) { index, slide in
                         OnboardingSlideView(
                             slide: slide,
@@ -65,6 +84,7 @@ struct OnboardingView: View {
                 .tabViewStyle(.page(indexDisplayMode: .always))
                 .indexViewStyle(.page(backgroundDisplayMode: .interactive))
                 .animation(.easeInOut(duration: 0.25), value: selection)
+                
 
                 footer
             }
@@ -110,27 +130,14 @@ struct OnboardingView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
-                    .background(primary.opacity(0.35))
+                    .background(primary.opacity(0.5))
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     .overlay(
                         RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .stroke(accent.opacity(0.35), lineWidth: 1)
+                            .stroke(whiteColor.opacity(0.35), lineWidth: 1)
                     )
                 }
-
-                Button {
-                    finish()
-                } label: {
-                    Text("Пропустить")
-                        .font(.system(.headline, design: .rounded).weight(.semibold))
-                        .frame(width: 130)
-                        .padding(.vertical, 14)
-                        .background(Color.white.opacity(0.08))
-                        .foregroundStyle(.white.opacity(0.9))
-                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                }
-                .accessibilityLabel("Пропустить онбординг")
             }
         }
         .padding(.horizontal)
@@ -176,14 +183,14 @@ private struct OnboardingSlideView: View {
 
             ZStack {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(primary.opacity(0.20))
+                    .fill(primary.opacity(0.85))
                     .frame(width: 160, height: 160)
                     .overlay(
                         RoundedRectangle(cornerRadius: 28, style: .continuous)
-                            .stroke(accent.opacity(0.22), lineWidth: 1)
+                            .stroke(Color.white.opacity(0.5), lineWidth: 1)
                     )
                     .blur(radius: 0)
-                    .shadow(color: primary.opacity(0.35), radius: 18, x: 0, y: 10)
+                    .shadow(color: accent.opacity(0.6), radius: 18, x: 0, y: 10)
 
                 Image(systemName: slide.systemImage)
                     .font(.system(size: 54, weight: .bold, design: .rounded))
