@@ -36,6 +36,7 @@ struct CalendarView: View {
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
+                    .padding(.bottom, 85)
                 }
             }
             .navigationTitle("Календарь")

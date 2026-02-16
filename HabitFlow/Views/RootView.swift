@@ -2,51 +2,106 @@ import SwiftUI
 
 struct RootView: View {
     // MARK: - Tabs
-    enum Tab: Hashable {
-        case today
-        case calendar
-        case add
-        case settings
+    enum Tab: String, CaseIterable {
+        case today = "Today"
+        case calendar = "Calendar"
+        case add = "Add"
+        case settings = "Settings"
+        
+        var icon: String {
+            switch self {
+            case .today: return "checkmark.circle"
+            case .calendar: return "calendar"
+            case .add: return "plus.circle.fill"
+            case .settings: return "gearshape"
+            }
+        }
     }
-
+    
     @State private var selectedTab: Tab = .today
-
+    
     // Theme
     private let primary = Color.primaryPurple
-    private let accent  = Color.accentCyan
-
-    @Environment(\.horizontalSizeClass) private var hSizeClass
-
+    private let accent = Color.accentCyan
+    
     var body: some View {
         ZStack(alignment: .bottom) {
-            TabView(selection: $selectedTab) {
-                TodayView()
-                    .tag(Tab.today)
-
-                CalendarView()
-                    .tag(Tab.calendar)
-
-                AddEntryPointView()
-                    .tag(Tab.add)
-
-                SettingsView()
-                    .tag(Tab.settings)
+            // Background
+            Color.black
+                .ignoresSafeArea()
+            
+            // Content
+            Group {
+                switch selectedTab {
+                case .today:
+                    TodayView()
+                case .calendar:
+                    CalendarView()
+                case .add:
+                    AddEntryPointView()
+                case .settings:
+                    SettingsView()
+                }
             }
-            .toolbar(.hidden, for: .tabBar)
-
-            CustomTabBar(
-                selectedTab: $selectedTab,
-                primary: primary,
-                accent: accent
-            )
-            .padding(.horizontal)
-            .padding(.bottom, 10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
+            // Custom Tab Bar
+            VStack(spacing: 0) {
+                Spacer()
+                
+                HStack(spacing: 0) {
+                    ForEach(Tab.allCases, id: \.self) { tab in
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedTab = tab
+                            }
+                        } label: {
+                            VStack(spacing: 4) {
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: tab == .add ? 28 : 22, weight: .semibold))
+                                    .foregroundStyle(iconColor(for: tab))
+                                    .scaleEffect(selectedTab == tab ? 1.1 : 1.0)
+                                
+                                Text(tab.rawValue)
+                                    .font(.system(.caption2, design: .rounded))
+                                    .foregroundStyle(textColor(for: tab))
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                        )
+                )
+                .shadow(color: .black.opacity(0.3), radius: 20, y: 5)
+                .padding(.horizontal, 20)
+                
+            }
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         }
-        .background(Color.black.ignoresSafeArea())
         .dynamicTypeSize(.small ... .accessibility3)
     }
+    
+    // MARK: - Helpers
+    private func iconColor(for tab: Tab) -> Color {
+        if tab == .add {
+            return .white
+        }
+        return selectedTab == tab ? accent : .white.opacity(0.5)
+    }
+    
+    private func textColor(for tab: Tab) -> Color {
+        selectedTab == tab ? .white : .white.opacity(0.5)
+    }
 }
-
 // MARK: - Custom Tab Bar
 
 private struct CustomTabBar: View {
