@@ -162,38 +162,6 @@ private struct CustomTabBar: View {
     }
 }
 
-// MARK: - Add Tab Placeholder
-
-/// Вкладка «Add» как отдельный экран.
-/// Сейчас показывает плейсхолдер; позже сюда можно перенести полноценный сценарий создания привычки.
-private struct AddEntryPointView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.black.ignoresSafeArea()
-
-                VStack(spacing: 16) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 44, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.accentCyan)
-
-                    Text("Добавление привычки")
-                        .font(.system(.title3, design: .rounded).weight(.bold))
-                        .foregroundStyle(.white)
-
-                    Text("Скоро здесь будет отдельный экран для создания привычек.")
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                }
-            }
-            .navigationTitle("Add")
-            .navigationBarTitleDisplayMode(.inline)
-        }
-    }
-}
-
 // MARK: - Blur Helper
 
 private struct BlurView: UIViewRepresentable {
