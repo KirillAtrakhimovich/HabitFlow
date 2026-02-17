@@ -5,8 +5,11 @@ struct AddHabitView: View {
     @Environment(\.horizontalSizeClass) private var hSizeClass
     
     // Theme
-    private let primary = Color.primaryPurple
-    private let accent  = Color.accentCyan
+    let primary = Color(red: 0.75, green: 0.70, blue: 0.90)
+    let accent = Color(red: 0.55, green: 0.75, blue: 0.80)
+    
+    let purple = Color.purple
+    let cyan = Color.cyan
     
     // Form state
     @State private var title: String = ""
@@ -55,7 +58,15 @@ struct AddHabitView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                LinearGradient(
+                    colors: [
+                        primary.opacity(0.8),
+                        accent.opacity(0.7)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: hSizeClass == .regular ? 20 : 16) {
