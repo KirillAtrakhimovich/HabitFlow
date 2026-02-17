@@ -6,7 +6,16 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		282F1A032F44E7F600947FC6 /* HabitFlowModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 282F19F02F44E7F600947FC6 /* HabitFlowModel.xcdatamodeld */; };
+		282F1A142F44ED0400947FC6 /* HabitCD+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282F1A132F44ED0400947FC6 /* HabitCD+CoreDataProperties.swift */; };
+		282F1A152F44ED0400947FC6 /* HabitCD+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282F1A122F44ED0400947FC6 /* HabitCD+CoreDataClass.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		282F19FB2F44E7F600947FC6 /* HabitFlowModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = HabitFlowModel.xcdatamodel; sourceTree = "<group>"; };
+		282F1A122F44ED0400947FC6 /* HabitCD+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HabitCD+CoreDataClass.swift"; sourceTree = "<group>"; };
+		282F1A132F44ED0400947FC6 /* HabitCD+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HabitCD+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		28E0D5C02F32801400A9F5B5 /* HabitFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,8 +41,11 @@
 		28E0D5B72F32801400A9F5B5 = {
 			isa = PBXGroup;
 			children = (
+				282F1A122F44ED0400947FC6 /* HabitCD+CoreDataClass.swift */,
+				282F1A132F44ED0400947FC6 /* HabitCD+CoreDataProperties.swift */,
 				28E0D5C22F32801400A9F5B5 /* HabitFlow */,
 				28E0D5C12F32801400A9F5B5 /* Products */,
+				282F19F02F44E7F600947FC6 /* HabitFlowModel.xcdatamodeld */,
 			);
 			sourceTree = "<group>";
 		};
@@ -119,6 +131,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				282F1A142F44ED0400947FC6 /* HabitCD+CoreDataProperties.swift in Sources */,
+				282F1A152F44ED0400947FC6 /* HabitCD+CoreDataClass.swift in Sources */,
+				282F1A032F44E7F600947FC6 /* HabitFlowModel.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -322,6 +337,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		282F19F02F44E7F600947FC6 /* HabitFlowModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				282F19FB2F44E7F600947FC6 /* HabitFlowModel.xcdatamodel */,
+			);
+			currentVersion = 282F19FB2F44E7F600947FC6 /* HabitFlowModel.xcdatamodel */;
+			path = HabitFlowModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 28E0D5B82F32801400A9F5B5 /* Project object */;
 }
