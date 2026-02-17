@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HabitDetailView: View {
-    let habit: Habit
+    let habit: HabitModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var hSizeClass
     
@@ -19,7 +19,7 @@ struct HabitDetailView: View {
     @State private var successRate: Double = 0.0
     
     // Callbacks
-    var onEdit: ((Habit) -> Void)?
+    var onEdit: ((HabitModel) -> Void)?
     var onArchive: ((UUID) -> Void)?
     var onDelete: ((UUID) -> Void)?
     
@@ -451,14 +451,14 @@ private struct Card<Content: View>: View {
 // MARK: - Edit Habit View (Simplified)
 
 private struct EditHabitView: View {
-    let habit: Habit
-    let onSave: (Habit) -> Void
+    let habit: HabitModel
+    let onSave: (HabitModel) -> Void
     @Environment(\.dismiss) private var dismiss
     
     @State private var title: String
     @State private var goalTimesPerWeek: Int
     
-    init(habit: Habit, onSave: @escaping (Habit) -> Void) {
+    init(habit: HabitModel, onSave: @escaping (HabitModel) -> Void) {
         self.habit = habit
         self.onSave = onSave
         _title = State(initialValue: habit.title)

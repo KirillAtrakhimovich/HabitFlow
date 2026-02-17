@@ -3,7 +3,7 @@ import SwiftUI
 
 @MainActor
 final class HabitViewModel: ObservableObject {
-    @Published var habits: [Habit] = []
+    @Published var habits: [HabitModel] = []
 
     // In-memory progress for "today" (simple starter approach).
     // Later you can replace with persistence + DailyRecord storage.
@@ -16,21 +16,21 @@ final class HabitViewModel: ObservableObject {
         if !habits.isEmpty { return }
 
         habits = [
-            Habit(
+            HabitModel(
                 title: "Вода",
                 iconName: "drop.fill",
                 colorHex: "00FFFF",
                 goalTimesPerWeek: 7,
                 reminderTime: DateComponents(hour: 10, minute: 0)
             ),
-            Habit(
+            HabitModel(
                 title: "Тренировка",
                 iconName: "figure.strengthtraining.traditional",
                 colorHex: "8A2BE2",
                 goalTimesPerWeek: 3,
                 reminderTime: DateComponents(hour: 19, minute: 30)
             ),
-            Habit(
+            HabitModel(
                 title: "Чтение",
                 iconName: "book.fill",
                 colorHex: "34C759",
@@ -44,7 +44,7 @@ final class HabitViewModel: ObservableObject {
         _ = today
     }
 
-    func toggleHabit(_ habit: Habit) {
+    func toggleHabit(_ habit: HabitModel) {
         if completedToday.contains(habit.id) {
             completedToday.remove(habit.id)
         } else {
@@ -59,7 +59,7 @@ final class HabitViewModel: ObservableObject {
         goalTimesPerWeek: Int = 7,
         reminderTime: DateComponents? = nil
     ) {
-        let newHabit = Habit(
+        let newHabit = HabitModel(
             title: title.trimmingCharacters(in: .whitespacesAndNewlines),
             iconName: iconName,
             colorHex: colorHex,
@@ -72,7 +72,7 @@ final class HabitViewModel: ObservableObject {
 
     // MARK: - New methods for HabitDetailView
     
-    func updateHabit(_ updatedHabit: Habit) {
+    func updateHabit(_ updatedHabit: HabitModel) {
         if let index = habits.firstIndex(where: { $0.id == updatedHabit.id }) {
             habits[index] = updatedHabit
         }
@@ -89,7 +89,7 @@ final class HabitViewModel: ObservableObject {
     }
 
     // Convenience
-    func isCompletedToday(_ habit: Habit) -> Bool {
+    func isCompletedToday(_ habit: HabitModel) -> Bool {
         completedToday.contains(habit.id)
     }
 

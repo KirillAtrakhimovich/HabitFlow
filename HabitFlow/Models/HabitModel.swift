@@ -1,6 +1,6 @@
 import Foundation
 
-struct Habit: Identifiable, Codable, Hashable {
+struct HabitModel: Identifiable, Codable, Hashable {
     var id: UUID
     var title: String
     var iconName: String

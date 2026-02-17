@@ -27,65 +27,28 @@ struct RootView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Background
-            Color.black
-                .ignoresSafeArea()
+
             
-            // Content
-            Group {
-                switch selectedTab {
-                case .today:
-                    TodayView()
-                case .calendar:
-                    CalendarView()
-                case .add:
-                    AddEntryPointView()
-                case .settings:
-                    SettingsView()
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            // Custom Tab Bar
-            VStack(spacing: 0) {
-                Spacer()
-                
-                HStack(spacing: 0) {
-                    ForEach(Tab.allCases, id: \.self) { tab in
-                        Button {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                selectedTab = tab
-                            }
-                        } label: {
-                            VStack(spacing: 4) {
-                                Image(systemName: tab.icon)
-                                    .font(.system(size: tab == .add ? 28 : 22, weight: .semibold))
-                                    .foregroundStyle(iconColor(for: tab))
-                                    .scaleEffect(selectedTab == tab ? 1.1 : 1.0)
-                                
-                                Text(tab.rawValue)
-                                    .font(.system(.caption2, design: .rounded))
-                                    .foregroundStyle(textColor(for: tab))
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.plain)
+            TabView(selection: $selectedTab) {
+                TodayView()
+                    .tabItem {
+                        Label("Today", systemImage: "checkmark.circle")
                     }
-                }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
-                .background(
-                    Capsule()
-                        .fill(.ultraThinMaterial)
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                        )
-                )
-                .shadow(color: .black.opacity(0.3), radius: 20, y: 5)
-                .padding(.horizontal, 20)
+                    .tag(Tab.today)
                 
+                CalendarView()
+                    .tabItem {
+                        Label("Calendar", systemImage: "calendar")
+                    }
+                    .tag(Tab.calendar)
+                
+                SettingsView()
+                    .tabItem {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                    .tag(Tab.settings)
             }
-            .ignoresSafeArea(.keyboard, edges: .bottom)
+            .tint(accent)
         }
         .dynamicTypeSize(.small ... .accessibility3)
     }
@@ -195,38 +158,6 @@ private struct CustomTabBar: View {
             )
         } else {
             return AnyShapeStyle(isSelected ? accent : Color.white.opacity(0.7))
-        }
-    }
-}
-
-// MARK: - Add Tab Placeholder
-
-/// Вкладка «Add» как отдельный экран.
-/// Сейчас показывает плейсхолдер; позже сюда можно перенести полноценный сценарий создания привычки.
-private struct AddEntryPointView: View {
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.black.ignoresSafeArea()
-
-                VStack(spacing: 16) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 44, weight: .bold, design: .rounded))
-                        .foregroundStyle(Color.accentCyan)
-
-                    Text("Добавление привычки")
-                        .font(.system(.title3, design: .rounded).weight(.bold))
-                        .foregroundStyle(.white)
-
-                    Text("Скоро здесь будет отдельный экран для создания привычек.")
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundStyle(.white.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 24)
-                }
-            }
-            .navigationTitle("Add")
-            .navigationBarTitleDisplayMode(.inline)
         }
     }
 }
