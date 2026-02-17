@@ -13,7 +13,7 @@ struct TodayView: View {
 
     @State private var showAddSheet = false
     @State private var newHabitTitle: String = ""
-    @State private var selectedHabit: Habit?
+    @State private var selectedHabit: HabitModel?
 
     var body: some View {
         NavigationStack {
@@ -274,7 +274,7 @@ private struct Card<Content: View>: View {
 }
 
 private struct HabitRow: View {
-    let habit: Habit
+    let habit: HabitModel
     let isCompleted: Bool
     let primary: Color
     let accent: Color
