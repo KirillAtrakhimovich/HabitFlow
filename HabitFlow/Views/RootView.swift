@@ -19,6 +19,7 @@ struct RootView: View {
     }
     
     @State private var selectedTab: Tab = .today
+    @Environment(\.managedObjectContext) private var viewContext
     
     // Theme
     private let primary = Color.primaryPurple

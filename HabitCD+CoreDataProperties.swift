@@ -2,7 +2,7 @@
 //  HabitCD+CoreDataProperties.swift
 //  HabitFlow
 //
-//  Created by Kirill Atrakhimovich on 17.02.26.
+//  Created by Kirill Atrakhimovich on 18.02.26.
 //
 //
 
@@ -18,9 +18,11 @@ extension HabitCD {
         return NSFetchRequest<HabitCD>(entityName: "HabitCD")
     }
 
-    @NSManaged public var id: UUID?
-    @NSManaged public var title: String?
-    @NSManaged public var completed: Bool
+    @NSManaged public var isCompleted: Bool
+    @NSManaged public var id: UUID
+    @NSManaged public var title: String
+    @NSManaged public var completedDates: [Date]?
+    @NSManaged public var createdAt: Date
 
 }
 
