@@ -6,6 +6,7 @@ struct HabitFlowApp: App {
 
     private let primaryColor = Color.primaryPurple
     private let accentColor  = Color.accentCyan
+    let persistenceController = PersistenceController.shared
 
     var body: some Scene {
         WindowGroup {
@@ -19,6 +20,7 @@ struct HabitFlowApp: App {
                         .transition(.opacity)
                 } else {
                     RootView()
+                        .environment(\.managedObjectContext, persistenceController.container.viewContext)
                         .transition(.opacity)
                 }
             }

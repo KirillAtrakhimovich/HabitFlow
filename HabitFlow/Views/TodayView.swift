@@ -1,9 +1,11 @@
 import SwiftUI
+import CoreData
 
 struct TodayView: View {
     @Environment(\.horizontalSizeClass) private var hSizeClass
+    @Environment(\.managedObjectContext) private var viewContext
     
-    @StateObject private var vm = HabitViewModel()
+    @ObservedObject private var vm = HabitViewModel()
 
     let primary = Color(red: 0.75, green: 0.70, blue: 0.90)
     let accent = Color(red: 0.55, green: 0.75, blue: 0.80)
@@ -13,21 +15,20 @@ struct TodayView: View {
 
     @State private var showAddSheet = false
     @State private var newHabitTitle: String = ""
-    @State private var selectedHabit: HabitModel?
+    @State private var selectedHabit: HabitCD?  // Изменено на HabitCD
 
     var body: some View {
         NavigationStack {
             ZStack {
-                    LinearGradient(
-                        colors: [
-                            primary.opacity(0.8),
-                            accent.opacity(0.7)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .ignoresSafeArea()
-
+                LinearGradient(
+                    colors: [
+                        primary.opacity(0.8),
+                        accent.opacity(0.7)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: hSizeClass == .regular ? 18 : 14) {
@@ -55,30 +56,20 @@ struct TodayView: View {
                             .foregroundStyle(Color.cyan.opacity(0.6))
                             .padding(10)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            
                     }
                     .accessibilityLabel("Добавить привычку")
                 }
             }
             .tint(accent)
-            .onAppear { vm.loadHabits() }
             .sheet(isPresented: $showAddSheet) {
-                AddHabitView { title, icon, colorHex, goal, reminder in
-                    vm.addHabit(
-                        title: title,
-                        iconName: icon,
-                        colorHex: colorHex,
-                        goalTimesPerWeek: goal,
-                        reminderTime: reminder
-                    )
-                }
+                addHabitSheet
                     .presentationDetents([.medium])
             }
         }
         .dynamicTypeSize(.small ... .accessibility3)
     }
 
-    // MARK: - UI
+    // MARK: - UI Components
 
     private var headerCard: some View {
         Card {
@@ -130,29 +121,19 @@ struct TodayView: View {
 
     private var habitsList: some View {
         VStack(spacing: 10) {
-            ForEach(vm.habits) { habit in
+            ForEach(vm.habits, id: \.objectID) { habit in
                 NavigationLink {
-                    HabitDetailView(
-                        habit: habit,
-                        onEdit: { updatedHabit in
-                            vm.updateHabit(updatedHabit)
-                        },
-                        onArchive: { id in
-                            vm.archiveHabit(id)
-                        },
-                        onDelete: { id in
-                            vm.deleteHabit(id)
-                        }
-                    )
+
                 } label: {
                     HabitRow(
                         habit: habit,
                         isCompleted: vm.isCompletedToday(habit),
                         primary: primary,
-                        accent: accent
-                    ) {
-                        vm.toggleHabit(habit)
-                    }
+                        accent: accent,
+                        onToggle: {
+                            vm.toggleHabit(habit)
+                        }
+                    )
                 }
                 .buttonStyle(.plain)
             }
@@ -216,7 +197,7 @@ struct TodayView: View {
                         .foregroundStyle(.white)
 
                     Button {
-                        vm.addHabit(title: newHabitTitle, iconName: "checkmark.circle.fill", colorHex: "00FFFF", goalTimesPerWeek: 7)
+                        vm.addHabit(title: newHabitTitle)
                         newHabitTitle = ""
                         showAddSheet = false
                     } label: {
@@ -274,20 +255,34 @@ private struct Card<Content: View>: View {
 }
 
 private struct HabitRow: View {
-    let habit: HabitModel
+    @ObservedObject var habit: HabitCD  // Изменено на @ObservedObject
     let isCompleted: Bool
     let primary: Color
     let accent: Color
     let onToggle: () -> Void
 
-    // MARK: - Derived values (help compiler)
-    private var iconBackground: Color { Color(habit.colorHex).opacity(isCompleted ? 0.25 : 0.14) }
-    private var iconBorder: Color { Color.cyan.opacity(isCompleted ? 0.55 : 0.15) }
-    private var checkFill: Color { isCompleted ? Color.cyan.opacity(0.95) : Color.white.opacity(0.10) }
-    private var checkForeground: Color { isCompleted ? .black : .white.opacity(0.65) }
-    private var cardBackground: Color { Color.purple.opacity(isCompleted ? 0.30 : 0.15) }
-    private var cardBorder: Color { isCompleted ? Color.cyan.opacity(0.45) : Color.white.opacity(0.06) }
-    private var cardShadow: Color { Color.black.opacity(isCompleted ? 0.45 : 0.30) }
+    // MARK: - Derived values
+    private var iconBackground: Color {
+        Color.cyan.opacity(isCompleted ? 0.25 : 0.14)
+    }
+    private var iconBorder: Color {
+        Color.cyan.opacity(isCompleted ? 0.55 : 0.15)
+    }
+    private var checkFill: Color {
+        isCompleted ? Color.cyan.opacity(0.95) : Color.white.opacity(0.10)
+    }
+    private var checkForeground: Color {
+        isCompleted ? .black : .white.opacity(0.65)
+    }
+    private var cardBackground: Color {
+        Color.purple.opacity(isCompleted ? 0.30 : 0.15)
+    }
+    private var cardBorder: Color {
+        isCompleted ? Color.cyan.opacity(0.45) : Color.white.opacity(0.06)
+    }
+    private var cardShadow: Color {
+        Color.black.opacity(isCompleted ? 0.45 : 0.30)
+    }
 
     var body: some View {
         Button(action: onToggle) {
@@ -323,7 +318,8 @@ private struct HabitRow: View {
                 .frame(width: 48, height: 48)
                 .overlay(iconOverlay)
 
-            Image(systemName: habit.iconName)
+            // Временная иконка, пока нет поля в Core Data
+            Image(systemName: "star.fill")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
                 .opacity(isCompleted ? 1.0 : 0.9)
@@ -337,11 +333,12 @@ private struct HabitRow: View {
 
     private var texts: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(habit.title)
+            Text(habit.title ?? "")
                 .font(.system(.headline, design: .rounded).weight(.bold))
                 .foregroundStyle(.white)
 
-            Text("Цель: \(habit.goalTimesPerWeek) раз(а) в неделю")
+            // Временный текст, пока нет goal в Core Data
+            Text("Цель: 7 раз(а) в неделю")
                 .font(.system(.footnote, design: .rounded))
                 .foregroundStyle(.white.opacity(0.65))
         }
@@ -363,4 +360,13 @@ private struct HabitRow: View {
         RoundedRectangle(cornerRadius: 18, style: .continuous)
             .stroke(cardBorder, lineWidth: 1)
     }
+}
+
+// MARK: - Preview
+#Preview {
+    let context = PersistenceController.preview.container.viewContext
+    let vm = HabitViewModel()
+    
+    TodayView()
+        .environment(\.managedObjectContext, context)
 }

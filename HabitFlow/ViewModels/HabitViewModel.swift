@@ -1,100 +1,149 @@
 import Foundation
 import SwiftUI
+import CoreData
 
 @MainActor
 final class HabitViewModel: ObservableObject {
-    @Published var habits: [HabitModel] = []
-
-    // In-memory progress for "today" (simple starter approach).
-    // Later you can replace with persistence + DailyRecord storage.
-    @Published private(set) var completedToday: Set<UUID> = []
-
-    private var today: DateOnly { DateOnly(date: Date()) }
-
-    func loadHabits() {
-        // Starter seed (remove when you add persistence)
-        if !habits.isEmpty { return }
-
-        habits = [
-            HabitModel(
-                title: "Вода",
-                iconName: "drop.fill",
-                colorHex: "00FFFF",
-                goalTimesPerWeek: 7,
-                reminderTime: DateComponents(hour: 10, minute: 0)
-            ),
-            HabitModel(
-                title: "Тренировка",
-                iconName: "figure.strengthtraining.traditional",
-                colorHex: "8A2BE2",
-                goalTimesPerWeek: 3,
-                reminderTime: DateComponents(hour: 19, minute: 30)
-            ),
-            HabitModel(
-                title: "Чтение",
-                iconName: "book.fill",
-                colorHex: "34C759",
-                goalTimesPerWeek: 5,
-                reminderTime: DateComponents(hour: 21, minute: 0)
-            )
-        ]
-
-        // reset today's completion (naive; replace with DailyRecord later)
-        completedToday.removeAll()
-        _ = today
-    }
-
-    func toggleHabit(_ habit: HabitModel) {
-        if completedToday.contains(habit.id) {
-            completedToday.remove(habit.id)
-        } else {
-            completedToday.insert(habit.id)
-        }
-    }
-
-    func addHabit(
-        title: String,
-        iconName: String = "sparkles",
-        colorHex: String = "8A2BE2",
-        goalTimesPerWeek: Int = 7,
-        reminderTime: DateComponents? = nil
-    ) {
-        let newHabit = HabitModel(
-            title: title.trimmingCharacters(in: .whitespacesAndNewlines),
-            iconName: iconName,
-            colorHex: colorHex,
-            goalTimesPerWeek: goalTimesPerWeek,
-            reminderTime: reminderTime
-        )
-        guard !newHabit.title.isEmpty else { return }
-        habits.insert(newHabit, at: 0)
-    }
-
-    // MARK: - New methods for HabitDetailView
+    // Храним Core Data объекты напрямую
+    @Published var habits: [HabitCD] = []
     
-    func updateHabit(_ updatedHabit: HabitModel) {
-        if let index = habits.firstIndex(where: { $0.id == updatedHabit.id }) {
-            habits[index] = updatedHabit
+    private let context = PersistenceController.shared.container.viewContext
+    
+    // Для отслеживания выполненных сегодня
+    @Published private(set) var completedToday: Set<UUID> = []
+    
+    init() {
+        fetchHabits()
+        
+        // Если база пустая - создаем тестовые данные
+        if habits.isEmpty {
+            createSampleHabits()
         }
     }
-
-    func archiveHabit(_ id: UUID) {
-        habits.removeAll { $0.id == id }
-        completedToday.remove(id)
+    
+    // MARK: - Core Data Operations
+    
+    func fetchHabits() {
+        let request: NSFetchRequest<HabitCD> = HabitCD.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \HabitCD.createdAt, ascending: true)]
+        
+        do {
+            habits = try context.fetch(request)
+            updateCompletedToday() // Обновляем список выполненных на сегодня
+        } catch {
+            print("Ошибка загрузки: \(error)")
+        }
     }
-
-    func deleteHabit(_ id: UUID) {
-        habits.removeAll { $0.id == id }
-        completedToday.remove(id)
+    
+    func createSampleHabits() {
+        let samples = ["Вода", "Тренировка", "Чтение"]
+        
+        for sample in samples {
+            let habit = HabitCD(context: context)
+            habit.id = UUID()
+            habit.title = sample
+            habit.isCompleted = false
+            habit.completedDates = []
+            habit.createdAt = Date()
+        }
+        
+        saveContext()
+        fetchHabits()
     }
-
-    // Convenience
-    func isCompletedToday(_ habit: HabitModel) -> Bool {
+    
+    func addHabit(title: String) {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTitle.isEmpty else { return }
+        
+        let habit = HabitCD(context: context)
+        habit.id = UUID()
+        habit.title = trimmedTitle
+        habit.isCompleted = false
+        habit.completedDates = []
+        habit.createdAt = Date()
+        
+        saveContext()
+        fetchHabits()
+    }
+    
+    func toggleHabit(_ habit: HabitCD) {
+        // Инвертируем isCompleted
+        habit.isCompleted.toggle()
+        
+        // Обновляем completedDates для истории
+        var dates = habit.completedDates ?? []
+        let today = Calendar.current.startOfDay(for: Date())
+        
+        if habit.isCompleted {
+            // Если выполнили - добавляем сегодня
+            if !dates.contains(where: { Calendar.current.isDate($0, inSameDayAs: today) }) {
+                dates.append(today)
+            }
+        } else {
+            // Если сняли выполнение - убираем сегодня
+            dates.removeAll { Calendar.current.isDate($0, inSameDayAs: today) }
+        }
+        
+        habit.completedDates = dates
+        
+        saveContext()
+        
+        // Обновляем completedToday
+        if habit.isCompleted {
+            completedToday.insert(habit.id)
+        } else {
+            completedToday.remove(habit.id)
+        }
+        
+        // Уведомляем UI об изменениях
+        objectWillChange.send()
+    }
+    
+    func deleteHabit(_ habit: HabitCD) {
+        context.delete(habit)
+        saveContext()
+        
+        // Удаляем из списков
+        habits.removeAll { $0.id == habit.id }
+        completedToday.remove(habit.id)
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func updateCompletedToday() {
+        completedToday.removeAll()
+        let today = Calendar.current.startOfDay(for: Date())
+        
+        for habit in habits {
+            if let completedDates = habit.completedDates,
+               completedDates.contains(where: { Calendar.current.isDate($0, inSameDayAs: today) }) {
+                completedToday.insert(habit.id)
+            }
+        }
+    }
+    
+    private func saveContext() {
+        do {
+            try context.save()
+        } catch {
+            print("Ошибка сохранения: \(error)")
+        }
+    }
+    
+    // MARK: - Convenience Methods
+    
+    func isCompletedToday(_ habit: HabitCD) -> Bool {
         completedToday.contains(habit.id)
     }
-
-    var completedCount: Int { completedToday.count }
-    var totalCount: Int { habits.count }
+    
+    var completedCount: Int {
+        completedToday.count
+    }
+    
+    var totalCount: Int {
+        habits.count
+    }
+    
     var progress: Double {
         guard totalCount > 0 else { return 0 }
         return Double(completedCount) / Double(totalCount)
