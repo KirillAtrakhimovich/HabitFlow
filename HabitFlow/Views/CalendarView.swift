@@ -27,11 +27,10 @@ struct CalendarView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-//                Color.black.ignoresSafeArea()
                 LinearGradient(
                     colors: [
-                        primary.opacity(0.8),
-                        accent.opacity(0.7)
+                        primary.opacity(0.22),
+                        accent.opacity(0.94)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -48,7 +47,7 @@ struct CalendarView: View {
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
-                    .padding(.bottom, 85)
+                    .padding(.bottom, 2)
                 }
             }
             .navigationTitle("Календарь")
@@ -158,8 +157,8 @@ struct CalendarView: View {
 
                 ProgressBar(
                     progress: completionByDay[selectedDate] ?? 0,
-                    primary: primary,
-                    accent: accent,
+                    primary: purple,
+                    accent: cyan,
                     success: success
                 )
                 .frame(height: 12)
@@ -212,7 +211,7 @@ struct CalendarView: View {
                         .foregroundStyle(monthPercent > 0 ? accent : .white.opacity(0.55))
                 }
 
-                ProgressBar(progress: monthPercent, primary: primary, accent: accent, success: success)
+                ProgressBar(progress: monthPercent, primary: purple, accent: cyan, success: success)
                     .frame(height: 12)
             }
         }
@@ -403,7 +402,7 @@ private struct ProgressBar: View {
                     .fill(Color.white.opacity(0.10))
 
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(LinearGradient(colors: [success, accent, primary], startPoint: .leading, endPoint: .trailing))
+                    .fill(LinearGradient(colors: [primary, accent], startPoint: .leading, endPoint: .trailing))
                     .frame(width: geo.size.width * CGFloat(min(1, max(0, progress))))
                     .animation(.easeInOut(duration: 0.2), value: progress)
             }
@@ -476,7 +475,7 @@ private struct Card<Content: View>: View {
     var body: some View {
         content
             .padding(16)
-            .background(Color.white.opacity(0.07))
+            .background(Color.purple.opacity(0.4))
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)

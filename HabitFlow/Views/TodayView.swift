@@ -22,8 +22,8 @@ struct TodayView: View {
             ZStack {
                 LinearGradient(
                     colors: [
-                        primary.opacity(0.8),
-                        accent.opacity(0.7)
+                        primary.opacity(0.22),
+                        accent.opacity(0.94)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing

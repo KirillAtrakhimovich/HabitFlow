@@ -20,8 +20,8 @@ struct LaunchScreenView: View {
         ZStack {
             LinearGradient(
                 colors: [
-                    primaryBrand.opacity(0.5),
-                    accentBrand.opacity(0.92)
+                    primaryBrand.opacity(0.22),
+                    accentBrand.opacity(0.94)
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing

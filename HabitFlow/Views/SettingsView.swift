@@ -21,8 +21,8 @@ struct SettingsView: View {
             ZStack {
                 LinearGradient(
                     colors: [
-                        primary.opacity(0.8),
-                        accent.opacity(0.7)
+                        primary.opacity(0.22),
+                        accent.opacity(0.94)
                     ],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
@@ -35,12 +35,12 @@ struct SettingsView: View {
                         notificationsSection
                         dataSection
                         aboutSection
-                        
-                        Spacer(minLength: 20)
+//                        
+//                        Spacer(minLength: 20)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
-                    .padding(.bottom, 85)
+                    .padding(.bottom, 2)
                 }
             }
             .navigationTitle("Настройки")
@@ -319,7 +319,7 @@ private struct Card<Content: View>: View {
     var body: some View {
         content
             .padding(16)
-            .background(Color.white.opacity(0.07))
+            .background(Color.purple.opacity(0.4))
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
