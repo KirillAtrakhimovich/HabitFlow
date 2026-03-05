@@ -361,12 +361,3 @@ private struct HabitRow: View {
             .stroke(cardBorder, lineWidth: 1)
     }
 }
-
-// MARK: - Preview
-#Preview {
-    let context = PersistenceController.preview.container.viewContext
-    let vm = HabitViewModel()
-    
-    TodayView()
-        .environment(\.managedObjectContext, context)
-}

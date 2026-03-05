@@ -9,7 +9,6 @@ final class HabitViewModel: ObservableObject {
     
     private let context = PersistenceController.shared.container.viewContext
     
-    // Для отслеживания выполненных сегодня
     @Published private(set) var completedToday: Set<UUID> = []
     
     init() {

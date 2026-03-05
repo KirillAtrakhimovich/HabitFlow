@@ -20,12 +20,10 @@ struct PersistenceController {
         }
     }
     
-    // Для превью
     static var preview: PersistenceController = {
         let controller = PersistenceController(inMemory: true)
         let context = controller.container.viewContext
         
-        // Добавим тестовую привычку
         let habit = HabitCD(context: context)
         habit.id = UUID()
         habit.title = "Выпить воду"
