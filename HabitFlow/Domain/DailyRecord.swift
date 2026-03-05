@@ -1,7 +1,5 @@
 import Foundation
 
-/// Date without time (calendar day), stored as year-month-day.
-/// Helpful for habit tracking where time-of-day should not affect equality/grouping.
 struct DateOnly: Codable, Hashable, Comparable {
     let year: Int
     let month: Int
@@ -41,7 +39,6 @@ struct DailyRecord: Identifiable, Codable, Hashable {
     var habitId: UUID
     var date: DateOnly
     var completedCount: Int
-    /// Stored flag (can be derived from `completedCount`, but kept as requested).
     var isCompleted: Bool
 
     init(

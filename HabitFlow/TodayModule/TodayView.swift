@@ -1,22 +1,37 @@
 import SwiftUI
+import CoreData
 
 struct TodayView: View {
-    @StateObject private var vm = HabitViewModel()
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+    @Environment(\.managedObjectContext) private var viewContext
+    
+    @ObservedObject private var vm = HabitViewModel()
 
-    private let primary = Color("8A2BE2")
-    private let accent  = Color("00FFFF")
+    let primary = Color(red: 0.75, green: 0.70, blue: 0.90)
+    let accent = Color(red: 0.55, green: 0.75, blue: 0.80)
+    
+    let purple = Color.purple
+    let cyan = Color.cyan
 
     @State private var showAddSheet = false
     @State private var newHabitTitle: String = ""
-    @State private var selectedHabit: Habit?
+    @State private var selectedHabit: HabitCD?  // Изменено на HabitCD
 
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                LinearGradient(
+                    colors: [
+                        primary.opacity(0.22),
+                        accent.opacity(0.94)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 14) {
+                    VStack(spacing: hSizeClass == .regular ? 18 : 14) {
                         headerCard
                         progressCard
 
@@ -26,7 +41,7 @@ struct TodayView: View {
                             habitsList
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal)
                     .padding(.vertical, 12)
                 }
             }
@@ -37,37 +52,24 @@ struct TodayView: View {
                         showAddSheet = true
                     } label: {
                         Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold, design: .rounded))
-                            .foregroundStyle(.white)
+                            .font(.system(size: 16, weight: .heavy, design: .rounded))
+                            .foregroundStyle(Color.cyan.opacity(0.6))
                             .padding(10)
-                            .background(primary.opacity(0.35))
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(accent.opacity(0.35), lineWidth: 1)
-                            )
                     }
                     .accessibilityLabel("Добавить привычку")
                 }
             }
             .tint(accent)
-            .onAppear { vm.loadHabits() }
             .sheet(isPresented: $showAddSheet) {
-                AddHabitView { title, icon, colorHex, goal, reminder in
-                    vm.addHabit(
-                        title: title,
-                        iconName: icon,
-                        colorHex: colorHex,
-                        goalTimesPerWeek: goal,
-                        reminderTime: reminder
-                    )
-                }
+                addHabitSheet
                     .presentationDetents([.medium])
             }
         }
+        .dynamicTypeSize(.small ... .accessibility3)
     }
 
-    // MARK: - UI
+    // MARK: - UI Components
 
     private var headerCard: some View {
         Card {
@@ -105,7 +107,7 @@ struct TodayView: View {
                         .frame(height: 12)
 
                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(LinearGradient(colors: [accent, primary], startPoint: .leading, endPoint: .trailing))
+                        .fill(LinearGradient(colors: [purple, cyan], startPoint: .leading, endPoint: .trailing))
                         .frame(width: max(0, CGFloat(vm.progress) * (UIScreen.main.bounds.width - 32 - 32)), height: 12)
                         .animation(.easeInOut(duration: 0.2), value: vm.progress)
                 }
@@ -119,29 +121,19 @@ struct TodayView: View {
 
     private var habitsList: some View {
         VStack(spacing: 10) {
-            ForEach(vm.habits) { habit in
+            ForEach(vm.habits, id: \.objectID) { habit in
                 NavigationLink {
-                    HabitDetailView(
-                        habit: habit,
-                        onEdit: { updatedHabit in
-                            vm.updateHabit(updatedHabit)
-                        },
-                        onArchive: { id in
-                            vm.archiveHabit(id)
-                        },
-                        onDelete: { id in
-                            vm.deleteHabit(id)
-                        }
-                    )
+
                 } label: {
                     HabitRow(
                         habit: habit,
                         isCompleted: vm.isCompletedToday(habit),
                         primary: primary,
-                        accent: accent
-                    ) {
-                        vm.toggleHabit(habit)
-                    }
+                        accent: accent,
+                        onToggle: {
+                            vm.toggleHabit(habit)
+                        }
+                    )
                 }
                 .buttonStyle(.plain)
             }
@@ -205,7 +197,7 @@ struct TodayView: View {
                         .foregroundStyle(.white)
 
                     Button {
-                        vm.addHabit(title: newHabitTitle, iconName: "checkmark.circle.fill", colorHex: "00FFFF", goalTimesPerWeek: 7)
+                        vm.addHabit(title: newHabitTitle)
                         newHabitTitle = ""
                         showAddSheet = false
                     } label: {
@@ -252,7 +244,7 @@ private struct Card<Content: View>: View {
     var body: some View {
         content
             .padding(16)
-            .background(Color.white.opacity(0.07))
+            .background(Color.purple.opacity(0.3))
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -263,20 +255,34 @@ private struct Card<Content: View>: View {
 }
 
 private struct HabitRow: View {
-    let habit: Habit
+    @ObservedObject var habit: HabitCD  // Изменено на @ObservedObject
     let isCompleted: Bool
     let primary: Color
     let accent: Color
     let onToggle: () -> Void
 
-    // MARK: - Derived values (help compiler)
-    private var iconBackground: Color { Color(habit.colorHex).opacity(isCompleted ? 0.25 : 0.14) }
-    private var iconBorder: Color { accent.opacity(isCompleted ? 0.55 : 0.15) }
-    private var checkFill: Color { isCompleted ? accent.opacity(0.95) : Color.white.opacity(0.10) }
-    private var checkForeground: Color { isCompleted ? .black : .white.opacity(0.65) }
-    private var cardBackground: Color { Color.white.opacity(isCompleted ? 0.10 : 0.06) }
-    private var cardBorder: Color { isCompleted ? accent.opacity(0.45) : Color.white.opacity(0.06) }
-    private var cardShadow: Color { Color.black.opacity(isCompleted ? 0.45 : 0.30) }
+    // MARK: - Derived values
+    private var iconBackground: Color {
+        Color.cyan.opacity(isCompleted ? 0.25 : 0.14)
+    }
+    private var iconBorder: Color {
+        Color.cyan.opacity(isCompleted ? 0.55 : 0.15)
+    }
+    private var checkFill: Color {
+        isCompleted ? Color.cyan.opacity(0.95) : Color.white.opacity(0.10)
+    }
+    private var checkForeground: Color {
+        isCompleted ? .black : .white.opacity(0.65)
+    }
+    private var cardBackground: Color {
+        Color.purple.opacity(isCompleted ? 0.30 : 0.15)
+    }
+    private var cardBorder: Color {
+        isCompleted ? Color.cyan.opacity(0.45) : Color.white.opacity(0.06)
+    }
+    private var cardShadow: Color {
+        Color.black.opacity(isCompleted ? 0.45 : 0.30)
+    }
 
     var body: some View {
         Button(action: onToggle) {
@@ -312,7 +318,8 @@ private struct HabitRow: View {
                 .frame(width: 48, height: 48)
                 .overlay(iconOverlay)
 
-            Image(systemName: habit.iconName)
+            // Временная иконка, пока нет поля в Core Data
+            Image(systemName: "star.fill")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
                 .opacity(isCompleted ? 1.0 : 0.9)
@@ -326,11 +333,12 @@ private struct HabitRow: View {
 
     private var texts: some View {
         VStack(alignment: .leading, spacing: 3) {
-            Text(habit.title)
+            Text(habit.title ?? "")
                 .font(.system(.headline, design: .rounded).weight(.bold))
                 .foregroundStyle(.white)
 
-            Text("Цель: \(habit.goalTimesPerWeek) раз(а) в неделю")
+            // Временный текст, пока нет goal в Core Data
+            Text("Цель: 7 раз(а) в неделю")
                 .font(.system(.footnote, design: .rounded))
                 .foregroundStyle(.white.opacity(0.65))
         }

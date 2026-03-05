@@ -1,13 +1,17 @@
 import SwiftUI
 
 struct SettingsView: View {
+    @Environment(\.horizontalSizeClass) private var hSizeClass
     @AppStorage("isDarkMode") private var isDarkMode = true
     @AppStorage("notificationsEnabled") private var notificationsEnabled = true
     @AppStorage("dailyRemindersEnabled") private var dailyRemindersEnabled = true
     
     // Theme
-    private let primary = Color.purple
-    private let accent  = Color.cyan
+    let primary = Color(red: 0.75, green: 0.70, blue: 0.90)
+    let accent = Color(red: 0.55, green: 0.75, blue: 0.80)
+    
+    let purple = Color.purple
+    let cyan = Color.cyan
     
     @State private var showExportAlert = false
     @State private var showAboutSheet = false
@@ -15,19 +19,28 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color.black.ignoresSafeArea()
+                LinearGradient(
+                    colors: [
+                        primary.opacity(0.22),
+                        accent.opacity(0.94)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 16) {
+                    VStack(spacing: hSizeClass == .regular ? 20 : 16) {
                         appearanceSection
                         notificationsSection
                         dataSection
                         aboutSection
-                        
-                        Spacer(minLength: 20)
+//                        
+//                        Spacer(minLength: 20)
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal)
                     .padding(.vertical, 12)
+                    .padding(.bottom, 2)
                 }
             }
             .navigationTitle("Настройки")
@@ -43,6 +56,8 @@ struct SettingsView: View {
                 Text("Данные успешно экспортированы. Файл сохранён в папке «Файлы».")
             }
         }
+ 
+        .dynamicTypeSize(.small ... .accessibility3)
     }
     
     // MARK: - Sections
@@ -304,7 +319,7 @@ private struct Card<Content: View>: View {
     var body: some View {
         content
             .padding(16)
-            .background(Color.white.opacity(0.07))
+            .background(Color.purple.opacity(0.4))
             .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -319,8 +334,8 @@ private struct Card<Content: View>: View {
 private struct AboutSheet: View {
     @Environment(\.dismiss) private var dismiss
     
-    private let accent = Color.cyan
-    private let primary = Color.purple
+    private let accent = Color.accentCyan
+    private let primary = Color.primaryPurple
     
     var body: some View {
         NavigationStack {
