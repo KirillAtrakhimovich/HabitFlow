@@ -3,42 +3,35 @@ import CoreData
 
 struct TodayView: View {
     @Environment(\.horizontalSizeClass) private var hSizeClass
-    @Environment(\.managedObjectContext) private var viewContext
+    @StateObject private var viewModel = TodayViewModel()
     
-    @ObservedObject private var vm = HabitViewModel()
-
     let primary = Color(red: 0.75, green: 0.70, blue: 0.90)
     let accent = Color(red: 0.55, green: 0.75, blue: 0.80)
-    
     let purple = Color.purple
     let cyan = Color.cyan
-
-    @State private var showAddSheet = false
-    @State private var newHabitTitle: String = ""
-    @State private var selectedHabit: HabitCD?  // Изменено на HabitCD
 
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [
-                        primary.opacity(0.22),
-                        accent.opacity(0.94)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-
+                backgroundGradient
+                
                 ScrollView {
                     VStack(spacing: hSizeClass == .regular ? 18 : 14) {
-                        headerCard
-                        progressCard
-
-                        if vm.habits.isEmpty {
-                            emptyState
-                        } else {
+                        HeaderCard()
+                        
+                        ProgressCard(
+                            completedCount: viewModel.completedCount,
+                            totalCount: viewModel.totalCount,
+                            progress: viewModel.progress
+                        )
+                        
+                        if viewModel.hasHabits {
                             habitsList
+                        } else {
+                            EmptyStateView(
+                                accent: accent,
+                                onAddTap: { viewModel.showAddSheet = true }
+                            )
                         }
                     }
                     .padding(.horizontal)
@@ -46,92 +39,51 @@ struct TodayView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAddSheet = true
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .heavy, design: .rounded))
-                            .foregroundStyle(Color.cyan.opacity(0.6))
-                            .padding(10)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    }
-                    .accessibilityLabel("Добавить привычку")
-                }
-            }
+            .toolbar { toolbarContent }
             .tint(accent)
-            .sheet(isPresented: $showAddSheet) {
-                addHabitSheet
-                    .presentationDetents([.medium])
+            .sheet(isPresented: $viewModel.showAddSheet) {
+                AddHabitSheet(
+                    newHabitTitle: $viewModel.newHabitTitle,
+                    accent: accent,
+                    primary: primary,
+                    onAdd: viewModel.addHabit,
+                    onCancel: { viewModel.showAddSheet = false }
+                )
             }
         }
         .dynamicTypeSize(.small ... .accessibility3)
-    }
-
-    // MARK: - UI Components
-
-    private var headerCard: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Сегодня")
-                    .font(.system(.title2, design: .rounded).weight(.bold))
-                    .foregroundStyle(.white)
-
-                Text(formattedToday())
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.7))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+        .onAppear {
+            viewModel.refresh()
         }
     }
-
-    private var progressCard: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Text("Прогресс дня")
-                        .font(.system(.headline, design: .rounded).weight(.bold))
-                        .foregroundStyle(.white)
-
-                    Spacer()
-
-                    Text("\(vm.completedCount)/\(vm.totalCount)")
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.7))
-                }
-
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color.white.opacity(0.10))
-                        .frame(height: 12)
-
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(LinearGradient(colors: [purple, cyan], startPoint: .leading, endPoint: .trailing))
-                        .frame(width: max(0, CGFloat(vm.progress) * (UIScreen.main.bounds.width - 32 - 32)), height: 12)
-                        .animation(.easeInOut(duration: 0.2), value: vm.progress)
-                }
-
-                Text(vm.habits.isEmpty ? "Добавьте первую привычку" : "Отмечайте привычки — и полоса заполнится.")
-                    .font(.system(.footnote, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.6))
-            }
-        }
+    
+    // MARK: - Background
+    private var backgroundGradient: some View {
+        LinearGradient(
+            colors: [
+                primary.opacity(0.22),
+                accent.opacity(0.94)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
     }
-
+    
+    // MARK: - Habits List
     private var habitsList: some View {
         VStack(spacing: 10) {
-            ForEach(vm.habits, id: \.objectID) { habit in
+            ForEach(viewModel.habits, id: \.objectID) { habit in
                 NavigationLink {
-
+                    // Destination view
                 } label: {
                     HabitRow(
                         habit: habit,
-                        isCompleted: vm.isCompletedToday(habit),
+                        isCompleted: viewModel.isCompletedToday(habit),
                         primary: primary,
                         accent: accent,
                         onToggle: {
-                            vm.toggleHabit(habit)
+                            viewModel.toggleHabit(habit)
                         }
                     )
                 }
@@ -139,225 +91,21 @@ struct TodayView: View {
             }
         }
     }
-
-    private var emptyState: some View {
-        Card {
-            VStack(spacing: 12) {
-                Image(systemName: "sparkles")
-                    .font(.system(size: 34, weight: .bold, design: .rounded))
-                    .foregroundStyle(accent)
-
-                Text("Пока нет привычек")
-                    .font(.system(.headline, design: .rounded).weight(.bold))
-                    .foregroundStyle(.white)
-
-                Text("Нажмите «+», чтобы добавить первую привычку и начать трекать прогресс.")
-                    .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.7))
-                    .multilineTextAlignment(.center)
-
-                Button {
-                    showAddSheet = true
-                } label: {
-                    Text("Добавить привычку")
-                        .font(.system(.headline, design: .rounded).weight(.bold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(LinearGradient(colors: [accent, primary], startPoint: .leading, endPoint: .trailing))
-                        .foregroundStyle(.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
-                .padding(.top, 4)
+    
+    // MARK: - Toolbar
+    @ToolbarContentBuilder
+    private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) {
+            Button {
+                viewModel.showAddSheet = true
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .heavy, design: .rounded))
+                    .foregroundStyle(Color.cyan.opacity(0.6))
+                    .padding(10)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
             }
+            .accessibilityLabel("Добавить привычку")
         }
-    }
-
-    // MARK: - Add Habit Sheet
-
-    private var addHabitSheet: some View {
-        NavigationStack {
-            ZStack {
-                Color.black.ignoresSafeArea()
-
-                VStack(alignment: .leading, spacing: 14) {
-                    Text("Новая привычка")
-                        .font(.system(.title2, design: .rounded).weight(.bold))
-                        .foregroundStyle(.white)
-
-                    TextField("Название (например, «10 минут чтения»)", text: $newHabitTitle)
-                        .textInputAutocapitalization(.sentences)
-                        .disableAutocorrection(true)
-                        .padding(12)
-                        .background(Color.white.opacity(0.08))
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .stroke(accent.opacity(0.25), lineWidth: 1)
-                        )
-                        .foregroundStyle(.white)
-
-                    Button {
-                        vm.addHabit(title: newHabitTitle)
-                        newHabitTitle = ""
-                        showAddSheet = false
-                    } label: {
-                        Text("Добавить")
-                            .font(.system(.headline, design: .rounded).weight(.bold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(LinearGradient(colors: [accent, primary], startPoint: .leading, endPoint: .trailing))
-                            .foregroundStyle(.black)
-                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    }
-                    .disabled(newHabitTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .opacity(newHabitTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
-
-                    Spacer()
-                }
-                .padding(16)
-            }
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Закрыть") { showAddSheet = false }
-                        .foregroundStyle(.white.opacity(0.9))
-                }
-            }
-        }
-        .tint(accent)
-    }
-
-    // MARK: - Helpers
-
-    private func formattedToday() -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "ru_RU")
-        formatter.dateStyle = .full
-        return formatter.string(from: Date())
-    }
-}
-
-// MARK: - Components
-
-private struct Card<Content: View>: View {
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        content
-            .padding(16)
-            .background(Color.purple.opacity(0.3))
-            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
-            )
-            .shadow(color: Color.black.opacity(0.35), radius: 14, x: 0, y: 10)
-    }
-}
-
-private struct HabitRow: View {
-    @ObservedObject var habit: HabitCD  // Изменено на @ObservedObject
-    let isCompleted: Bool
-    let primary: Color
-    let accent: Color
-    let onToggle: () -> Void
-
-    // MARK: - Derived values
-    private var iconBackground: Color {
-        Color.cyan.opacity(isCompleted ? 0.25 : 0.14)
-    }
-    private var iconBorder: Color {
-        Color.cyan.opacity(isCompleted ? 0.55 : 0.15)
-    }
-    private var checkFill: Color {
-        isCompleted ? Color.cyan.opacity(0.95) : Color.white.opacity(0.10)
-    }
-    private var checkForeground: Color {
-        isCompleted ? .black : .white.opacity(0.65)
-    }
-    private var cardBackground: Color {
-        Color.purple.opacity(isCompleted ? 0.30 : 0.15)
-    }
-    private var cardBorder: Color {
-        isCompleted ? Color.cyan.opacity(0.45) : Color.white.opacity(0.06)
-    }
-    private var cardShadow: Color {
-        Color.black.opacity(isCompleted ? 0.45 : 0.30)
-    }
-
-    var body: some View {
-        Button(action: onToggle) {
-            rowContent
-                .padding(14)
-                .background(cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay(cardOverlay)
-                .shadow(color: cardShadow, radius: 12, x: 0, y: 8)
-                .animation(.easeInOut(duration: 0.2), value: isCompleted)
-        }
-        .buttonStyle(.plain)
-    }
-
-    // MARK: - Subviews
-
-    private var rowContent: some View {
-        HStack(spacing: 12) {
-            iconTile
-
-            texts
-
-            Spacer()
-
-            checkmark
-        }
-    }
-
-    private var iconTile: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(iconBackground)
-                .frame(width: 48, height: 48)
-                .overlay(iconOverlay)
-
-            // Временная иконка, пока нет поля в Core Data
-            Image(systemName: "star.fill")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .opacity(isCompleted ? 1.0 : 0.9)
-        }
-    }
-
-    private var iconOverlay: some View {
-        RoundedRectangle(cornerRadius: 14, style: .continuous)
-            .stroke(iconBorder, lineWidth: 1)
-    }
-
-    private var texts: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(habit.title ?? "")
-                .font(.system(.headline, design: .rounded).weight(.bold))
-                .foregroundStyle(.white)
-
-            // Временный текст, пока нет goal в Core Data
-            Text("Цель: 7 раз(а) в неделю")
-                .font(.system(.footnote, design: .rounded))
-                .foregroundStyle(.white.opacity(0.65))
-        }
-    }
-
-    private var checkmark: some View {
-        ZStack {
-            Circle()
-                .fill(checkFill)
-                .frame(width: 28, height: 28)
-
-            Image(systemName: isCompleted ? "checkmark" : "circle")
-                .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundStyle(checkForeground)
-        }
-    }
-
-    private var cardOverlay: some View {
-        RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .stroke(cardBorder, lineWidth: 1)
     }
 }

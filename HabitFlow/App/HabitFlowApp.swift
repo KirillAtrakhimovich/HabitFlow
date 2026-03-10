@@ -11,7 +11,6 @@ struct HabitFlowApp: App {
     var body: some Scene {
         WindowGroup {
             ZStack {
-                // Main routing
                 if appVM.showLaunchScreen {
                     LaunchScreenView()
                         .transition(.opacity)
@@ -30,10 +29,7 @@ struct HabitFlowApp: App {
             .tint(accentColor)
             .environment(\.colorScheme, .light)
             .environment(\.font, .system(.body, design: .rounded))
-            .onAppear {
-                appVM.primaryColorHex = "8A2BE2"
-                appVM.accentColorHex = "00FFFF"
-            }
+
         }
     }
 }
@@ -45,9 +41,6 @@ final class AppViewModel: ObservableObject {
     @Published var showLaunchScreen: Bool = true
     @Published var showOnboarding: Bool = true
 
-    @Published var primaryColorHex: String = "8A2BE2"
-    @Published var accentColorHex: String = "00FFFF"
-
     func completeOnboarding() {
         showOnboarding = false
     }
@@ -57,35 +50,3 @@ final class AppViewModel: ObservableObject {
     }
 }
 
-// MARK: - Temporary placeholders (remove when real views exist)
-
-private struct PlaceholderOnboardingView: View {
-    @EnvironmentObject private var appVM: AppViewModel
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("Onboarding")
-                .font(.system(.title, design: .rounded).weight(.bold))
-            Text("Replace this with your real onboarding screens.")
-                .foregroundStyle(.secondary)
-
-            Button("Finish Onboarding") {
-                appVM.completeOnboarding()
-            }
-            .buttonStyle(.borderedProminent)
-        }
-        .padding()
-    }
-}
-
-private struct PlaceholderMainView: View {
-    var body: some View {
-        VStack(spacing: 12) {
-            Text("HabitFlow")
-                .font(.system(.largeTitle, design: .rounded).weight(.bold))
-            Text("Replace this with your main app UI.")
-                .foregroundStyle(.secondary)
-        }
-        .padding()
-    }
-}

@@ -1,4 +1,3 @@
-// PersistenceController.swift
 import CoreData
 
 struct PersistenceController {
@@ -19,19 +18,4 @@ struct PersistenceController {
             }
         }
     }
-    
-    static var preview: PersistenceController = {
-        let controller = PersistenceController(inMemory: true)
-        let context = controller.container.viewContext
-        
-        let habit = HabitCD(context: context)
-        habit.id = UUID()
-        habit.title = "Выпить воду"
-        habit.createdAt = Date()
-        habit.isCompleted = false
-        habit.completedDates = []
-        
-        try? context.save()
-        return controller
-    }()
 }
