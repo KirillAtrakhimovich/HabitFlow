@@ -3,7 +3,7 @@ import SwiftUI
 import CoreData
 
 @MainActor
-final class HabitViewModel: ObservableObject {
+final class PersistenceViewModel: ObservableObject {
     // Храним Core Data объекты напрямую
     @Published var habits: [HabitCD] = []
     
@@ -41,9 +41,9 @@ final class HabitViewModel: ObservableObject {
             let habit = HabitCD(context: context)
             habit.id = UUID()
             habit.title = sample
-            habit.isCompleted = false
-            habit.completedDates = []
             habit.createdAt = Date()
+            habit.colorName = "systemBlue"
+            habit.iconName = "drop.fill"
         }
         
         saveContext()
@@ -57,38 +57,37 @@ final class HabitViewModel: ObservableObject {
         let habit = HabitCD(context: context)
         habit.id = UUID()
         habit.title = trimmedTitle
-        habit.isCompleted = false
-        habit.completedDates = []
         habit.createdAt = Date()
+        habit.colorName = "systemBlue"
+        habit.iconName = "drop.fill"
         
         saveContext()
         fetchHabits()
     }
     
     func toggleHabit(_ habit: HabitCD) {
-        // Инвертируем isCompleted
-        habit.isCompleted.toggle()
+        // Определяем текущее состояние на основе completedToday
+        let isCurrentlyCompleted = completedToday.contains(habit.id)
         
         // Обновляем completedDates для истории
         var dates = habit.completedDates ?? []
         let today = Calendar.current.startOfDay(for: Date())
         
-        if habit.isCompleted {
-            // Если выполнили - добавляем сегодня
+        if !isCurrentlyCompleted {
+            // Если не выполнено - добавляем сегодня
             if !dates.contains(where: { Calendar.current.isDate($0, inSameDayAs: today) }) {
                 dates.append(today)
             }
         } else {
-            // Если сняли выполнение - убираем сегодня
+            // Если выполнено - убираем сегодня
             dates.removeAll { Calendar.current.isDate($0, inSameDayAs: today) }
         }
         
         habit.completedDates = dates
-        
         saveContext()
         
         // Обновляем completedToday
-        if habit.isCompleted {
+        if !isCurrentlyCompleted {
             completedToday.insert(habit.id)
         } else {
             completedToday.remove(habit.id)
@@ -101,10 +100,8 @@ final class HabitViewModel: ObservableObject {
     func deleteHabit(_ habit: HabitCD) {
         context.delete(habit)
         saveContext()
-        
-        // Удаляем из списков
-        habits.removeAll { $0.id == habit.id }
         completedToday.remove(habit.id)
+        fetchHabits()
     }
     
     // MARK: - Helper Methods
