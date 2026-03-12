@@ -1,12 +1,15 @@
 import SwiftUI
 
 struct HabitRow: View {
-    @ObservedObject var habit: HabitCD
-    let isCompleted: Bool
+    let habit: Habit  // Теперь используем доменную модель, не @ObservedObject
     let primary: Color
     let accent: Color
     let onToggle: () -> Void
 
+    private var isCompleted: Bool {
+        habit.isCompletedToday
+    }
+    
     // MARK: - Computed Properties для стилей
     private var iconBackground: Color {
         isCompleted ? accent.opacity(0.25) : accent.opacity(0.14)
@@ -55,14 +58,19 @@ struct HabitRow: View {
             iconTile
             
             VStack(alignment: .leading, spacing: 3) {
-                Text(habit.title ?? "Без названия")
+                Text(habit.title)
                     .font(.system(.headline, design: .rounded).weight(.bold))
                     .foregroundStyle(.white)
                 
-                // Временный текст, пока нет данных в Core Data
-                Text("Нажмите, чтобы отметить")
-                    .font(.system(.footnote, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.5))
+                if habit.streakCount > 0 {
+                    Text("🔥 \(habit.streakCount) дней подряд")
+                        .font(.system(.footnote, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.7))
+                } else {
+                    Text("Нажмите, чтобы отметить")
+                        .font(.system(.footnote, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.5))
+                }
             }
             
             Spacer()
@@ -80,7 +88,7 @@ struct HabitRow: View {
                         .stroke(iconBorder, lineWidth: 1)
                 )
 
-            Image(systemName: habit.iconName ?? "star.fill")
+            Image(systemName: habit.iconName)
                 .font(.system(size: 18, weight: .bold))
                 .foregroundStyle(.white)
                 .opacity(isCompleted ? 1.0 : 0.9)

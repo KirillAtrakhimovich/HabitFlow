@@ -21,6 +21,10 @@ struct RootView: View {
     private let primary = Color.primaryPurple
     private let accent = Color.accentCyan
     
+    @StateObject private var calendarVM = CalendarViewModel()
+    @StateObject private var todayVM = TodayViewModel()
+//    @StateObject private var settingsVM = SettingsViewModel()
+    
     var body: some View {
         ZStack(alignment: .bottom) {
             
@@ -31,7 +35,7 @@ struct RootView: View {
                     }
                     .tag(Tab.today)
                 
-                CalendarView()
+                CalendarView(viewModel: calendarVM)
                     .tabItem {
                         Label("Calendar", systemImage: "calendar")
                     }
