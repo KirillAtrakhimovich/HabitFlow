@@ -1,32 +1,37 @@
 import SwiftUI
-import CoreData
 
 @MainActor
 final class TodayViewModel: ObservableObject {
-    @Published private(set) var habits: [HabitCD] = []
-    @Published private(set) var completedToday: Set<UUID> = []
+    @Published private(set) var habits: [Habit] = []
     @Published var showAddSheet = false
     @Published var newHabitTitle = ""
     
-    private let persistenceVM: PersistenceViewModel
+    private let repository: HabitRepository
     
     init() {
-        self.persistenceVM = PersistenceViewModel()
-        self.habits = persistenceVM.habits
-        self.completedToday = persistenceVM.completedToday
+        self.repository = HabitRepository()
+        self.habits = repository.habits
+        
+        // Подписываемся на изменения в репозитории
+        setupBindings()
+    }
+    
+    private func setupBindings() {
+        // Можно использовать Combine или просто обновлять при каждом действии
     }
     
     // MARK: - Computed Properties
     var completedCount: Int {
-        persistenceVM.completedCount
+        habits.filter { $0.isCompletedToday }.count
     }
     
     var totalCount: Int {
-        persistenceVM.totalCount
+        habits.count
     }
     
     var progress: Double {
-        persistenceVM.progress
+        guard totalCount > 0 else { return 0 }
+        return Double(completedCount) / Double(totalCount)
     }
     
     var hasHabits: Bool {
@@ -38,29 +43,30 @@ final class TodayViewModel: ObservableObject {
     }
     
     // MARK: - Methods
-    func isCompletedToday(_ habit: HabitCD) -> Bool {
-        persistenceVM.isCompletedToday(habit)
+    func loadHabits() {
+        habits = repository.habits
     }
     
-    func toggleHabit(_ habit: HabitCD) {
-        persistenceVM.toggleHabit(habit)
-        updateFromPersistence()
+    func toggleHabit(_ habit: Habit) {
+        repository.toggleHabit(habit)
+        loadHabits() // Обновляем список после изменения
     }
     
     func addHabit() {
-        persistenceVM.addHabit(title: newHabitTitle)
+        repository.addHabit(title: newHabitTitle)
         newHabitTitle = ""
         showAddSheet = false
-        updateFromPersistence()
+        loadHabits()
+    }
+    
+    func deleteHabit(_ habit: Habit) {
+        repository.deleteHabit(habit)
+        loadHabits()
     }
     
     func refresh() {
-        updateFromPersistence()
-    }
-    
-    private func updateFromPersistence() {
-        habits = persistenceVM.habits
-        completedToday = persistenceVM.completedToday
+        repository.fetchHabits()
+        loadHabits()
     }
     
     // MARK: - Formatting

@@ -1,5 +1,4 @@
 import SwiftUI
-import CoreData
 
 struct TodayView: View {
     @Environment(\.horizontalSizeClass) private var hSizeClass
@@ -73,13 +72,12 @@ struct TodayView: View {
     // MARK: - Habits List
     private var habitsList: some View {
         VStack(spacing: 10) {
-            ForEach(viewModel.habits, id: \.objectID) { habit in
+            ForEach(viewModel.habits) { habit in
                 NavigationLink {
                     // Destination view
                 } label: {
                     HabitRow(
                         habit: habit,
-                        isCompleted: viewModel.isCompletedToday(habit),
                         primary: primary,
                         accent: accent,
                         onToggle: {
