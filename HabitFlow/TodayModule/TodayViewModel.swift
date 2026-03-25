@@ -52,6 +52,12 @@ final class TodayViewModel: ObservableObject {
         loadHabits() // Обновляем список после изменения
     }
     
+    func editHabit(_ habit: Habit) {
+           // Логика редактирования
+           print("Редактирование: \(habit.title)")
+       }
+
+    
     func addHabit() {
         repository.addHabit(title: newHabitTitle)
         newHabitTitle = ""
