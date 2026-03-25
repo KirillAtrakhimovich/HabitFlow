@@ -39,22 +39,26 @@ struct ProgressCard: View {
                     .foregroundStyle(.white.opacity(0.6))
             }
         }
+        .padding(.horizontal, 20)
     }
     
     private var progressBar: some View {
-        ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(0.10))
-                .frame(height: 12)
-            
-            RoundedRectangle(cornerRadius: 10)
-                .fill(LinearGradient(
-                    colors: [purple, cyan],
-                    startPoint: .leading,
-                    endPoint: .trailing
-                ))
-                .frame(width: max(0, CGFloat(progress) * (UIScreen.main.bounds.width - 32 - 32)), height: 12)
-                .animation(.easeInOut(duration: 0.2), value: progress)
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.white.opacity(0.10))
+                    .frame(height: 12)
+                
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(LinearGradient(
+                        colors: [purple, cyan],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
+                    .frame(width: max(0, CGFloat(progress) * geometry.size.width), height: 12)
+                    .animation(.easeInOut(duration: 0.2), value: progress)
+            }
         }
+        .frame(height: 12) // Фиксируем высоту, чтобы GeometryReader не растягивался
     }
 }

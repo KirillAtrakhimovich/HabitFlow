@@ -2,57 +2,80 @@ import SwiftUI
 
 struct TodayView: View {
     @Environment(\.horizontalSizeClass) private var hSizeClass
-    @StateObject private var viewModel = TodayViewModel()
+    @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var repository = HabitRepository()
+    
+    @State private var newHabitTitle = ""
+    @State private var selectedIcon = "sparkles" // Добавляем
+    @State private var selectedColorName = "Фиолетовый"
+    @State private var showAddSheet = false
     
     let primary = Color(red: 0.75, green: 0.70, blue: 0.90)
     let accent = Color(red: 0.55, green: 0.75, blue: 0.80)
-    let purple = Color.purple
-    let cyan = Color.cyan
-
+    
     var body: some View {
         NavigationStack {
             ZStack {
                 backgroundGradient
                 
-                ScrollView {
-                    VStack(spacing: hSizeClass == .regular ? 18 : 14) {
-                        HeaderCard()
-                        
-                        ProgressCard(
-                            completedCount: viewModel.completedCount,
-                            totalCount: viewModel.totalCount,
-                            progress: viewModel.progress
-                        )
-                        
-                        if viewModel.hasHabits {
+                
+                VStack(spacing: hSizeClass == .regular ? 18 : 14) {
+                    HeaderCard()
+                    
+                    ProgressCard(
+                        completedCount: repository.completedCount,
+                        totalCount: repository.totalCount,
+                        progress: repository.progress
+                    )
+                    ScrollView {
+                        if !repository.habits.isEmpty {
                             habitsList
                         } else {
-                            EmptyStateView(
-                                accent: accent,
-                                onAddTap: { viewModel.showAddSheet = true }
-                            )
+                            emptyStateView
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
                     .padding(.vertical, 12)
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
             .tint(accent)
-            .sheet(isPresented: $viewModel.showAddSheet) {
+            .sheet(isPresented: $showAddSheet) {
                 AddHabitSheet(
-                    newHabitTitle: $viewModel.newHabitTitle,
+                    newHabitTitle: $newHabitTitle,
+                    selectedIcon: $selectedIcon, // Передаем
+                    selectedColorName: $selectedColorName,
                     accent: accent,
                     primary: primary,
-                    onAdd: viewModel.addHabit,
-                    onCancel: { viewModel.showAddSheet = false }
+                    onAdd: addHabit,
+                    onCancel: {
+                        showAddSheet = false
+                        // Сбрасываем значения при отмене
+                        newHabitTitle = ""
+                        selectedIcon = "sparkles"
+                        selectedColorName = "Фиолетовый"
+                    }
                 )
             }
         }
         .dynamicTypeSize(.small ... .accessibility3)
         .onAppear {
-            viewModel.refresh()
+            print("👋 TodayView появился")
+            repository.fetchHabits()
+        }
+        .onChange(of: scenePhase) { oldPhase, newPhase in
+            switch newPhase {
+            case .active:
+                print("🔵 Приложение стало активным")
+                repository.checkForNewDay()
+            case .inactive:
+                print("⚪️ Приложение неактивно")
+            case .background:
+                print("⚫️ Приложение в фоне")
+            @unknown default:
+                break
+            }
         }
     }
     
@@ -72,22 +95,64 @@ struct TodayView: View {
     // MARK: - Habits List
     private var habitsList: some View {
         VStack(spacing: 10) {
-            ForEach(viewModel.habits) { habit in
-                NavigationLink {
-                    // Destination view
-                } label: {
-                    HabitRow(
-                        habit: habit,
-                        primary: primary,
-                        accent: accent,
-                        onToggle: {
-                            viewModel.toggleHabit(habit)
-                        }
-                    )
+            ForEach(repository.habits) { habit in
+                HabitRow(
+                    habit: habit,
+                    primary: primary,
+                    accent: accent,
+                    onComplete: {
+                        repository.toggleHabit(habit)
+                    }
+                )
+                .contextMenu {
+                    Button {
+                        // Редактирование - пока просто удаление, потом добавим
+                    } label: {
+                        Label("Редактировать", systemImage: "pencil")
+                    }
+                    
+                    Button(role: .destructive) {
+                        repository.deleteHabit(habit)
+                    } label: {
+                        Label("Удалить", systemImage: "trash")
+                    }
                 }
-                .buttonStyle(.plain)
             }
         }
+    }
+    
+    // MARK: - Empty State
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "list.bullet.clipboard")
+                .font(.system(size: 60))
+                .foregroundStyle(accent)
+            
+            Text("Нет привычек на сегодня")
+                .font(.title3)
+                .fontWeight(.medium)
+                .foregroundStyle(.white)
+            
+            Text("Добавьте привычку, чтобы начать")
+                .font(.subheadline)
+                .foregroundStyle(.white.opacity(0.7))
+            
+            Button {
+                showAddSheet = true
+            } label: {
+                Text("Добавить привычку")
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(accent)
+                    .clipShape(RoundedRectangle(cornerRadius: 25))
+            }
+        }
+        .padding(40)
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 30))
     }
     
     // MARK: - Toolbar
@@ -95,7 +160,10 @@ struct TodayView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                viewModel.showAddSheet = true
+                selectedIcon = "sparkles" // Сбрасываем при открытии
+                selectedColorName = "Фиолетовый"
+                newHabitTitle = "" // Сбрасываем при открытии
+                showAddSheet = true
             } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 16, weight: .heavy, design: .rounded))
@@ -105,5 +173,21 @@ struct TodayView: View {
             }
             .accessibilityLabel("Добавить привычку")
         }
+    }
+    
+    // MARK: - Actions
+    private func addHabit() {
+        // Теперь передаем иконку и цвет в репозиторий
+        repository.addHabit(
+            title: newHabitTitle,
+            icon: selectedIcon,
+            colorName: selectedColorName  // И
+        )
+        
+        // Сбрасываем значения
+        newHabitTitle = ""
+        selectedIcon = "sparkles"
+        selectedColorName = "Фиолетовый"
+        showAddSheet = false
     }
 }
