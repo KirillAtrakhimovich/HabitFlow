@@ -22,13 +22,12 @@ final class HabitRepository: ObservableObject {
     init() {
         print("📅 HabitRepository инициализирован")
         setupNotifications()
-        checkForNewDay() // Проверяем при запуске
+        checkForNewDay()
         fetchHabits()
     }
     
     // MARK: - Настройка наблюдателей
     private func setupNotifications() {
-        // Наблюдаем за возвращением приложения из фона
         NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
             .sink { [weak self] _ in
                 print("📱 Приложение вернулось из фона")
@@ -36,7 +35,6 @@ final class HabitRepository: ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Наблюдаем за значительными изменениями времени (смена дня, перевод часов)
         NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)
             .sink { [weak self] _ in
                 print("⏰ Значительное изменение времени")
@@ -47,13 +45,11 @@ final class HabitRepository: ObservableObject {
     
     // MARK: - Проверка смены дня
     func checkForNewDay() {
-        // Получаем дату последнего сброса из UserDefaults
         let lastReset = UserDefaults.standard.object(forKey: lastResetDateKey) as? Date ?? Date.distantPast
         
         print("📅 Последний сброс был: \(lastReset)")
         print("📅 Сегодня: \(Date())")
         
-        // Проверяем, был ли последний сброс НЕ сегодня
         if !calendar.isDateInToday(lastReset) {
             print("🔄 Наступил новый день! Сбрасываем привычки...")
             resetCompletedHabits()
@@ -73,21 +69,19 @@ final class HabitRepository: ObservableObject {
             
             for cdHabit in cdHabits {
                 let completedDates = cdHabit.completedDates ?? []
-                
-                // Оставляем только даты, которые НЕ сегодня
                 let previousDates = completedDates.filter { date in
                     !calendar.isDateInToday(date)
                 }
                 
                 if completedDates.count != previousDates.count {
-                    print("  • Привычка '\(cdHabit.title ?? "")': сброшена")
+                    print("  • Привычка '\(cdHabit.title)': сброшена")
                     cdHabit.completedDates = previousDates
                 }
             }
             
             saveContext()
             print("💾 Сброс завершен")
-            fetchHabits() // Обновляем @Published массив
+            fetchHabits()
             
         } catch {
             print("❌ Ошибка при сбросе привычек: \(error)")
@@ -117,14 +111,14 @@ final class HabitRepository: ObservableObject {
         habit.title = trimmedTitle
         habit.createdAt = Date()
         habit.iconName = icon
-        habit.colorName = colorName  // Сохраняем имя цвета
+        habit.colorName = colorName
         habit.completedDates = []
         
         saveContext()
         fetchHabits()
     }
     
-    func updateHabit(_ habit: Habit, title: String? = nil, icon: String? = nil, colorHex: String? = nil) {
+    func updateHabit(_ habit: Habit, title: String? = nil, icon: String? = nil, colorName: String? = nil) {
         let request: NSFetchRequest<HabitCD> = HabitCD.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", habit.id as CVarArg)
         
@@ -140,8 +134,8 @@ final class HabitRepository: ObservableObject {
                 cdHabit.iconName = icon
             }
             
-            if let colorHex = colorHex {
-                cdHabit.colorName = colorHex
+            if let colorName = colorName {
+                cdHabit.colorName = colorName
             }
             
             saveContext()
@@ -153,7 +147,6 @@ final class HabitRepository: ObservableObject {
     }
     
     func toggleHabit(_ habit: Habit) {
-        // Находим соответствующий CD объект
         let request: NSFetchRequest<HabitCD> = HabitCD.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", habit.id as CVarArg)
         
@@ -161,16 +154,13 @@ final class HabitRepository: ObservableObject {
             let results = try context.fetch(request)
             guard let cdHabit = results.first else { return }
             
-            // Обновляем completedDates
             var dates = cdHabit.completedDates ?? []
             let today = Date()
             
             if habit.isCompletedToday {
-                // Убираем отметку (хотя по логике это не нужно, но оставим для гибкости)
                 dates.removeAll { calendar.isDate($0, inSameDayAs: today) }
                 print("  • Убираем отметку с '\(habit.title)'")
             } else {
-                // Добавляем отметку
                 if !dates.contains(where: { calendar.isDate($0, inSameDayAs: today) }) {
                     dates.append(today)
                     print("  • Отмечаем '\(habit.title)' как выполненную")

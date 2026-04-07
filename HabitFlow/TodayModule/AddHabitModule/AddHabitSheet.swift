@@ -15,8 +15,12 @@ struct AddHabitSheet: View {
     
     let accent: Color
     let primary: Color
-    let onAdd: () -> Void
+    let onSave: () -> Void
     let onCancel: () -> Void
+    
+    // Новые параметры для режима редактирования
+    var isEditing: Bool = false
+    var editingHabit: Habit? = nil
     
     // UI state for pickers
     @State private var showIconPicker = false
@@ -32,7 +36,7 @@ struct AddHabitSheet: View {
         "bicycle", "airplane", "car.fill", "tram.fill"
     ]
     
-    // Color palette - теперь с именами цветов и готовыми Color
+    // Color palette
     private let colorOptions: [(name: String, color: Color)] = [
         ("Фиолетовый", .purple),
         ("Голубой", .cyan),
@@ -52,7 +56,7 @@ struct AddHabitSheet: View {
                 Color.black.ignoresSafeArea()
                 
                 VStack(alignment: .leading, spacing: 14) {
-                    Text("Новая привычка")
+                    Text(isEditing ? "Редактировать привычку" : "Новая привычка")
                         .font(.system(.title2, design: .rounded).weight(.bold))
                         .foregroundStyle(.white)
                     
@@ -109,7 +113,7 @@ struct AddHabitSheet: View {
             HStack(spacing: 12) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(colorForName(selectedColorName).opacity(0.25))  // Изменено
+                        .fill(colorForName(selectedColorName).opacity(0.25))
                         .frame(width: 44, height: 44)
                         .overlay(
                             RoundedRectangle(cornerRadius: 14)
@@ -150,7 +154,7 @@ struct AddHabitSheet: View {
         } label: {
             HStack(spacing: 12) {
                 Circle()
-                    .fill(colorForName(selectedColorName))  // Изменено
+                    .fill(colorForName(selectedColorName))
                     .frame(width: 32, height: 32)
                     .overlay(
                         Circle()
@@ -162,7 +166,7 @@ struct AddHabitSheet: View {
                         .font(.system(.subheadline, design: .rounded))
                         .foregroundStyle(.white.opacity(0.7))
                     
-                    Text(selectedColorName)  // Изменено - теперь просто имя
+                    Text(selectedColorName)
                         .font(.system(.caption, design: .rounded))
                         .foregroundStyle(.white.opacity(0.5))
                 }
@@ -182,10 +186,10 @@ struct AddHabitSheet: View {
     
     private var addButton: some View {
         Button(action: {
-            onAdd()
+            onSave()
             dismiss()
         }) {
-            Text("Добавить")
+            Text(isEditing ? "Сохранить" : "Добавить")
                 .font(.system(.headline, design: .rounded).weight(.bold))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
@@ -211,25 +215,23 @@ struct AddHabitSheet: View {
                 ScrollView {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4), spacing: 16) {
                         ForEach(iconOptions, id: \.self) { icon in
-                            Button {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(selectedIcon == icon ? colorForName(selectedColorName).opacity(0.35) : Color.white.opacity(0.08))
+                                    .frame(width: 70, height: 70)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(selectedIcon == icon ? accent.opacity(0.6) : Color.white.opacity(0.1), lineWidth: selectedIcon == icon ? 2 : 1)
+                                    )
+                                
+                                Image(systemName: icon)
+                                    .font(.system(size: 24, weight: .medium, design: .rounded))
+                                    .foregroundStyle(.white)
+                            }
+                            .onTapGesture {
                                 selectedIcon = icon
                                 showIconPicker = false
-                            } label: {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(selectedIcon == icon ? colorForName(selectedColorName).opacity(0.35) : Color.white.opacity(0.08))  // Изменено
-                                        .frame(width: 70, height: 70)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 16)
-                                                .stroke(selectedIcon == icon ? accent.opacity(0.6) : Color.white.opacity(0.1), lineWidth: selectedIcon == icon ? 2 : 1)
-                                        )
-                                    
-                                    Image(systemName: icon)
-                                        .font(.system(size: 24, weight: .medium, design: .rounded))
-                                        .foregroundStyle(.white)
-                                }
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(16)
@@ -257,41 +259,9 @@ struct AddHabitSheet: View {
                 
                 ScrollView {
                     VStack(spacing: 12) {
-                        ForEach(colorOptions, id: \.name) { option in  // Изменено - теперь по name
-                            Button {
-                                selectedColorName = option.name  // Изменено
-                                showColorPicker = false
-                            } label: {
-                                HStack(spacing: 14) {
-                                    Circle()
-                                        .fill(option.color)  // Изменено
-                                        .frame(width: 40, height: 40)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(selectedColorName == option.name ? accent : Color.clear, lineWidth: 3)  // Изменено
-                                        )
-                                    
-                                    Text(option.name)
-                                        .font(.system(.body, design: .rounded).weight(.semibold))
-                                        .foregroundStyle(.white)
-                                    
-                                    Spacer()
-                                    
-                                    if selectedColorName == option.name {  // Изменено
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 14, weight: .bold))
-                                            .foregroundStyle(accent)
-                                    }
-                                }
-                                .padding(14)
-                                .background(selectedColorName == option.name ? Color.white.opacity(0.10) : Color.white.opacity(0.06))  // Изменено
-                                .clipShape(RoundedRectangle(cornerRadius: 16))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(selectedColorName == option.name ? accent.opacity(0.4) : Color.white.opacity(0.05), lineWidth: 1)  // Изменено
-                                )
-                            }
-                            .buttonStyle(.plain)
+                        ForEach(colorOptions.indices, id: \.self) { index in
+                            let option = colorOptions[index]
+                            colorPickerRow(option: option)
                         }
                     }
                     .padding(16)
@@ -311,7 +281,42 @@ struct AddHabitSheet: View {
         }
         .presentationDetents([.medium])
     }
-    
+
+    // Выносим каждый ряд в отдельную функцию
+    private func colorPickerRow(option: (name: String, color: Color)) -> some View {
+        HStack(spacing: 14) {
+            Circle()
+                .fill(option.color)
+                .frame(width: 40, height: 40)
+                .overlay(
+                    Circle()
+                        .stroke(selectedColorName == option.name ? accent : Color.clear, lineWidth: 3)
+                )
+            
+            Text(option.name)
+                .font(.system(.body, design: .rounded).weight(.semibold))
+                .foregroundStyle(.white)
+            
+            Spacer()
+            
+            if selectedColorName == option.name {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(accent)
+            }
+        }
+        .padding(14)
+        .background(selectedColorName == option.name ? Color.white.opacity(0.10) : Color.white.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(selectedColorName == option.name ? accent.opacity(0.4) : Color.white.opacity(0.05), lineWidth: 1)
+        )
+        .onTapGesture {
+            selectedColorName = option.name
+            showColorPicker = false
+        }
+    }
     // MARK: - Helpers
     
     private func colorForName(_ name: String) -> Color {
@@ -327,7 +332,7 @@ struct AddHabitSheet: View {
         selectedColorName: .constant("Фиолетовый"),
         accent: Color(red: 0.55, green: 0.75, blue: 0.80),
         primary: Color(red: 0.75, green: 0.70, blue: 0.90),
-        onAdd: {},
+        onSave: {},
         onCancel: {}
     )
 }
