@@ -59,6 +59,6 @@ struct ProgressCard: View {
                     .animation(.easeInOut(duration: 0.2), value: progress)
             }
         }
-        .frame(height: 12) // Фиксируем высоту, чтобы GeometryReader не растягивался
+        .frame(height: 12)
     }
 }

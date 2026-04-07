@@ -5,6 +5,8 @@ struct HabitRow: View {
     let primary: Color
     let accent: Color
     let onComplete: (() -> Void)?
+    let onEdit: (() -> Void)?
+    let onDelete: (() -> Void)?
 
     private var isCompleted: Bool {
         habit.isCompletedToday
@@ -84,21 +86,28 @@ struct HabitRow: View {
     }
 
     var body: some View {
-        Group {
-            if isCompleted {
-                cardContent
-                    .onTapGesture { }
-            } else if let onComplete = onComplete {
-                Button(action: onComplete) {
-                    cardContent
+        cardContent
+            .contentShape(Rectangle())
+            .onTapGesture {
+                // Выполняем привычку только если она не выполнена
+                if !isCompleted {
+                    onComplete?()
                 }
-                .buttonStyle(.plain)
-            } else {
-                cardContent
             }
-        }
-        .contentShape(Rectangle())
-        .animation(.easeInOut(duration: 0.3), value: isCompleted)
+            .contextMenu {
+                Button {
+                    onEdit?()
+                } label: {
+                    Label("Редактировать", systemImage: "pencil")
+                }
+                
+                Button(role: .destructive) {
+                    onDelete?()
+                } label: {
+                    Label("Удалить", systemImage: "trash")
+                }
+            }
+            .animation(.easeInOut(duration: 0.3), value: isCompleted)
     }
     
     // MARK: - Card Content
@@ -234,7 +243,9 @@ struct HabitRow: View {
                 ),
                 primary: Color(red: 0.75, green: 0.70, blue: 0.90),
                 accent: Color(red: 0.55, green: 0.75, blue: 0.80),
-                onComplete: {}
+                onComplete: {},
+                onEdit: {},
+                onDelete: {}
             )
             
             HabitRow(
@@ -248,9 +259,13 @@ struct HabitRow: View {
                 ),
                 primary: Color(red: 0.75, green: 0.70, blue: 0.90),
                 accent: Color(red: 0.55, green: 0.75, blue: 0.80),
-                onComplete: nil
+                onComplete: nil,
+                onEdit: {},
+                onDelete: {}
             )
         }
         .padding()
     }
 }
+
+

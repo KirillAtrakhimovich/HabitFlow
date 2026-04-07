@@ -3,4 +3,66 @@
    uuid = "00D9ED9D-8CFE-44C3-B4BA-B901279A8E90"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "84AA75A1-CA22-4D56-B7F5-1FD4B76898D4"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "HabitFlow/Repository/HabitRepository.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "105"
+            endingLineNumber = "105"
+            landmarkName = "addHabit(title:icon:colorName:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "84AA75A1-CA22-4D56-B7F5-1FD4B76898D4 - bae20e2a4fca2387"
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "default argument 1 of HabitFlow.HabitRepository.addHabit(title: Swift.String, icon: Swift.String, colorName: Swift.String) -&gt; ()"
+                  moduleName = "HabitFlow.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/kirillatrakhimovich/Documents/HabitFlow/HabitFlow/Repository/HabitRepository.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "105"
+                  endingLineNumber = "105">
+               </Location>
+               <Location
+                  uuid = "84AA75A1-CA22-4D56-B7F5-1FD4B76898D4 - 2b9d00c8df45bf85"
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "default argument 2 of HabitFlow.HabitRepository.addHabit(title: Swift.String, icon: Swift.String, colorName: Swift.String) -&gt; ()"
+                  moduleName = "HabitFlow.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/kirillatrakhimovich/Documents/HabitFlow/HabitFlow/Repository/HabitRepository.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "105"
+                  endingLineNumber = "105">
+               </Location>
+               <Location
+                  uuid = "84AA75A1-CA22-4D56-B7F5-1FD4B76898D4 - 2803ad2776c67f3d"
+                  shouldBeEnabled = "No"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "HabitFlow.HabitRepository.addHabit(title: Swift.String, icon: Swift.String, colorName: Swift.String) -&gt; ()"
+                  moduleName = "HabitFlow.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/kirillatrakhimovich/Documents/HabitFlow/HabitFlow/Repository/HabitRepository.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "106"
+                  endingLineNumber = "106">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

@@ -1,23 +1,33 @@
 import SwiftUI
+import Combine
 
 @MainActor
 final class TodayViewModel: ObservableObject {
     @Published private(set) var habits: [Habit] = []
     @Published var showAddSheet = false
+    @Published var showEditSheet = false  // ← добавляем
     @Published var newHabitTitle = ""
+    @Published var selectedIcon = "sparkles"  // ← добавляем
+    @Published var selectedColorName = "Фиолетовый"  // ← добавляем
+    @Published var editingHabit: Habit?  // ← добавляем
     
     private let repository: HabitRepository
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
         self.repository = HabitRepository()
-        self.habits = repository.habits
-        
-        // Подписываемся на изменения в репозитории
         setupBindings()
+        loadHabits()
     }
     
     private func setupBindings() {
-        // Можно использовать Combine или просто обновлять при каждом действии
+        // Подписываемся на изменения в репозитории
+        repository.$habits
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] habits in
+                self?.habits = habits
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Computed Properties
@@ -49,30 +59,54 @@ final class TodayViewModel: ObservableObject {
     
     func toggleHabit(_ habit: Habit) {
         repository.toggleHabit(habit)
-        loadHabits() // Обновляем список после изменения
     }
     
-    func editHabit(_ habit: Habit) {
-           // Логика редактирования
-           print("Редактирование: \(habit.title)")
-       }
-
-    
     func addHabit() {
-        repository.addHabit(title: newHabitTitle)
-        newHabitTitle = ""
+        repository.addHabit(
+            title: newHabitTitle,
+            icon: selectedIcon,
+            colorName: selectedColorName
+        )
+        resetForm()
         showAddSheet = false
-        loadHabits()
+    }
+    
+    func updateHabit() {
+        guard let habit = editingHabit else { return }
+        
+        repository.updateHabit(
+            habit,
+            title: newHabitTitle,
+            icon: selectedIcon,
+            colorName: selectedColorName
+        )
+        
+        resetForm()
+        showEditSheet = false
+        editingHabit = nil
+    }
+    
+    func startEditing(_ habit: Habit) {
+        newHabitTitle = habit.title
+        selectedIcon = habit.iconName
+        selectedColorName = habit.colorName
+        editingHabit = habit
+        showEditSheet = true
     }
     
     func deleteHabit(_ habit: Habit) {
         repository.deleteHabit(habit)
-        loadHabits()
+    }
+    
+    func resetForm() {
+        newHabitTitle = ""
+        selectedIcon = "sparkles"
+        selectedColorName = "Фиолетовый"
+        editingHabit = nil
     }
     
     func refresh() {
         repository.fetchHabits()
-        loadHabits()
     }
     
     // MARK: - Formatting

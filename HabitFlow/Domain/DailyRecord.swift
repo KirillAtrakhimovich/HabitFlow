@@ -23,7 +23,6 @@ struct DateOnly: Codable, Hashable, Comparable {
         comps.year = year
         comps.month = month
         comps.day = day
-        // Start of day in the given calendar/timezone
         return calendar.date(from: comps) ?? Date(timeIntervalSince1970: 0)
     }
 

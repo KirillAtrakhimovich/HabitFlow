@@ -6,9 +6,11 @@ struct TodayView: View {
     @StateObject private var repository = HabitRepository()
     
     @State private var newHabitTitle = ""
-    @State private var selectedIcon = "sparkles" // Добавляем
+    @State private var selectedIcon = "sparkles"
     @State private var selectedColorName = "Фиолетовый"
     @State private var showAddSheet = false
+    @State private var showEditSheet = false
+    @State private var editingHabit: Habit?
     
     let primary = Color(red: 0.75, green: 0.70, blue: 0.90)
     let accent = Color(red: 0.55, green: 0.75, blue: 0.80)
@@ -18,7 +20,6 @@ struct TodayView: View {
             ZStack {
                 backgroundGradient
                 
-                
                 VStack(spacing: hSizeClass == .regular ? 18 : 14) {
                     HeaderCard()
                     
@@ -27,6 +28,7 @@ struct TodayView: View {
                         totalCount: repository.totalCount,
                         progress: repository.progress
                     )
+                    
                     ScrollView {
                         if !repository.habits.isEmpty {
                             habitsList
@@ -44,18 +46,36 @@ struct TodayView: View {
             .sheet(isPresented: $showAddSheet) {
                 AddHabitSheet(
                     newHabitTitle: $newHabitTitle,
-                    selectedIcon: $selectedIcon, // Передаем
+                    selectedIcon: $selectedIcon,
                     selectedColorName: $selectedColorName,
                     accent: accent,
                     primary: primary,
-                    onAdd: addHabit,
+                    onSave: addHabit,
                     onCancel: {
                         showAddSheet = false
-                        // Сбрасываем значения при отмене
-                        newHabitTitle = ""
-                        selectedIcon = "sparkles"
-                        selectedColorName = "Фиолетовый"
-                    }
+                        resetForm()
+                    },
+                    isEditing: false
+                )
+            }
+            .sheet(isPresented: $showEditSheet) {
+                AddHabitSheet(
+                    newHabitTitle: $newHabitTitle,
+                    selectedIcon: $selectedIcon,
+                    selectedColorName: $selectedColorName,
+                    accent: accent,
+                    primary: primary,
+                    onSave: {
+                        if let habit = editingHabit {
+                            updateHabit(habit)
+                        }
+                    },
+                    onCancel: {
+                        showEditSheet = false
+                        resetForm()
+                    },
+                    isEditing: true,
+                    editingHabit: editingHabit
                 )
             }
         }
@@ -102,21 +122,14 @@ struct TodayView: View {
                     accent: accent,
                     onComplete: {
                         repository.toggleHabit(habit)
+                    },
+                    onEdit: {
+                        startEditing(habit)
+                    },
+                    onDelete: {
+                        repository.deleteHabit(habit)
                     }
                 )
-                .contextMenu {
-                    Button {
-                        // Редактирование - пока просто удаление, потом добавим
-                    } label: {
-                        Label("Редактировать", systemImage: "pencil")
-                    }
-                    
-                    Button(role: .destructive) {
-                        repository.deleteHabit(habit)
-                    } label: {
-                        Label("Удалить", systemImage: "trash")
-                    }
-                }
             }
         }
     }
@@ -138,6 +151,7 @@ struct TodayView: View {
                 .foregroundStyle(.white.opacity(0.7))
             
             Button {
+                resetForm()
                 showAddSheet = true
             } label: {
                 Text("Добавить привычку")
@@ -160,9 +174,7 @@ struct TodayView: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) {
             Button {
-                selectedIcon = "sparkles" // Сбрасываем при открытии
-                selectedColorName = "Фиолетовый"
-                newHabitTitle = "" // Сбрасываем при открытии
+                resetForm()
                 showAddSheet = true
             } label: {
                 Image(systemName: "plus")
@@ -177,17 +189,43 @@ struct TodayView: View {
     
     // MARK: - Actions
     private func addHabit() {
-        // Теперь передаем иконку и цвет в репозиторий
         repository.addHabit(
             title: newHabitTitle,
             icon: selectedIcon,
-            colorName: selectedColorName  // И
+            colorName: selectedColorName
+        )
+        resetForm()
+        showAddSheet = false
+    }
+    
+    private func updateHabit(_ habit: Habit) {
+        repository.updateHabit(
+            habit,
+            title: newHabitTitle,
+            icon: selectedIcon,
+            colorName: selectedColorName
         )
         
-        // Сбрасываем значения
+        resetForm()
+        showEditSheet = false
+        editingHabit = nil
+    }
+    
+    private func startEditing(_ habit: Habit) {
+        // Сначала устанавливаем значения
+        newHabitTitle = habit.title
+        selectedIcon = habit.iconName
+        selectedColorName = habit.colorName
+        editingHabit = habit
+        
+        // Затем открываем sheet
+        showEditSheet = true
+    }
+    
+    private func resetForm() {
         newHabitTitle = ""
         selectedIcon = "sparkles"
         selectedColorName = "Фиолетовый"
-        showAddSheet = false
+        editingHabit = nil
     }
 }
